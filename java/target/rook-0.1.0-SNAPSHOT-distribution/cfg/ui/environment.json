@@ -1,0 +1,14 @@
+{
+  "services": {
+    "MQTT.ENV": {
+      "type": "rook.core.mqtt.service.MqttService",
+      "classpath": "services/mqtt",
+      "config": {
+      	"serverURI": "tcp://localhost:1883",
+        "clientId": "ENVIRONMENT",
+        "payloadSize": "4096",
+        "startupConnectionRequired": "false"
+      }
+    }
+  }
+}

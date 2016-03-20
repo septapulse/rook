@@ -1,0 +1,25 @@
+{
+  "description": "Default GoPiGo Configuration",
+  "services": {
+    "IO": {
+      "type": "rook.core.io.service.raspberrypi.RaspberryPi",
+      "classpath": "services/io",
+      "config": {
+        "goPiGo": { 
+    		"bus": 1,
+			"address": 8,
+			"encoderLeft": "SPEED_RIGHT",
+			"encoderRight": "SPEED_LEFT",
+			"ledLeft": "LED_LEFT",
+			"ledRight": "LED_RIGHT",
+			"motorLeft": "MOTOR_LEFT",
+			"motorRight": "MOTOR_RIGHT",
+			"servoPosition": "SERVO",
+			"servoEnabled": "SERVO_POWER",
+			"ultrasonicDistance": "ULTRASONIC",
+			"voltage": "VOLTAGE"
+        }
+      }
+    }
+  }
+}

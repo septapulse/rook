@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+	<id>distribution</id>
+	<formats>
+		<format>dir</format>
+	</formats>
+	<baseDirectory>.</baseDirectory>
+	<fileSets>
+		<fileSet>
+			<directory>api/target/api-distribution/</directory>
+			<outputDirectory>/api/</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>ui/target/ui-distribution/</directory>
+			<outputDirectory>/ui/</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>core/io-service/target/io-service-distribution</directory>
+			<outputDirectory>/services/io/</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>core/mqtt-service/target/mqtt-service-distribution</directory>
+			<outputDirectory>/services/mqtt/</outputDirectory>
+		</fileSet>
+		
+		<fileSet>
+			<directory>dist/</directory>
+			<outputDirectory>/</outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>ui/html</directory>
+			<outputDirectory>/ui/html/</outputDirectory>
+		</fileSet>
+	</fileSets>
+</assembly>

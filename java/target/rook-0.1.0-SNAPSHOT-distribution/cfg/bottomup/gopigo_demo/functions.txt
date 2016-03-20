@@ -1,0 +1,50 @@
+function avoidLeft() {
+	SERVO = 78
+	sleep(250)
+	tooClose = (ULTRASONIC < 50)
+	if(tooClose) {
+		LEFT_WHEEL = 255
+		RIGHT_WHEEL = 64
+		sleep(500)
+		LEFT_WHEEL = 0
+		RIGHT_WHEEL = 0
+	}
+	tooClose
+}
+
+function avoidRight() {
+	SERVO = 168
+	sleep(250)
+	tooClose = (ULTRASONIC < 50)
+	if(tooClose) {
+		LEFT_WHEEL = 64
+		RIGHT_WHEEL = 255
+		sleep(500)
+		LEFT_WHEEL = 0
+		RIGHT_WHEEL = 0
+	}
+	tooClose
+}
+
+function forward() {
+	LEFT_WHEEL = 255
+	RIGHT_WHEEL = 255
+	sleep(1000)
+	LEFT_WHEEL = 0
+	RIGHT_WHEEL = 0
+	true
+}
+
+function escape() {
+	SERVO = 128;
+	sleep(250)
+	tooClose = (ULTRASONIC < 15)
+	if(tooClose) {
+		LEFT_WHEEL = -255
+		RIGHT_WHEEL = 255
+		sleep(500)
+		LEFT_WHEEL = 0
+		RIGHT_WHEEL = 0
+	}
+	tooClose
+}

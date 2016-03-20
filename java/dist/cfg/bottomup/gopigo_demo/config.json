@@ -1,0 +1,10 @@
+{
+	"description": "GoPiGo Bottom-Up Demo",
+	"functions": "gopigo.functions",
+	"behaviors": {
+		"Avoid Left": "avoidLeft()",
+		"Avoid Right": "avoidRight()",
+		"Forward": "forward()",
+		"Escape": "escape()"
+	}
+}

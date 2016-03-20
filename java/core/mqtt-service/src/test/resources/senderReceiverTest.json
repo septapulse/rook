@@ -1,0 +1,11 @@
+{
+	"services": {
+		"SENDER": {
+			"type": "rook.api.ExampleSendReceive$SenderService",
+			"receiverID": "RECEIVER"
+		},
+		"RECEIVER": {
+			type: "rook.api.ExampleSendReceive$ReceiverService"
+		}
+	}
+}

@@ -1,0 +1,13 @@
+{
+  "description": "Dummy IOService for Testing Purposes",
+  "services": {
+    "IO": {
+      "type": "rook.core.io.service.dummy.DummyIOService",
+      "classpath": "services/io",
+      "config": {
+        "inputs": [ {"id":"B1", "type":"BOOLEAN"}, {"id":"A1", "type":"FLOAT"}, {"id":"A2", "type":"INTEGER"} ],
+        "outputs": [ {"id":"OB1", "type":"BOOLEAN"}, {"id":"OA1", "type":"FLOAT"}, {"id":"OA2", "type":"INTEGER"} ]
+      }
+    }
+  }
+}
