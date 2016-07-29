@@ -67,6 +67,7 @@ public class RuntimeManager {
 	public ProcessRunInfo startRouter(String pkg, String type, String config) throws IOException {
 		String javaCmd = getJavaCmd();
 		String[] params = new String[] { javaCmd, "-cp", apiDir.getAbsolutePath() + "/*",
+				"-Dorg.slf4j.simpleLogger.showShortLogName=true", 
 				RouterLauncher.class.getName(), "-t", type, "-c", config };
 		return startProcess(params, pkg, type);
 	}
@@ -74,6 +75,7 @@ public class RuntimeManager {
 	public ProcessRunInfo startTransportBridge(String pkg, String type, String config) throws IOException {
 		String javaCmd = getJavaCmd();
 		String[] params = new String[] { javaCmd, "-cp", apiDir.getAbsolutePath() + "/*",
+				"-Dorg.slf4j.simpleLogger.showShortLogName=true", 
 				TransportBridge.class.getName(), "-t1", transportType.getName(), "-c1", transportConfig, "-t2", type,
 				"-c2", config };
 		return startProcess(params, pkg, type);
@@ -95,7 +97,9 @@ public class RuntimeManager {
 	private ProcessRunInfo launchService(String classpath, String pkg, String cfgName, String id, String type,
 			String cfgUrl) throws IOException {
 		String javaCmd = getJavaCmd();
-		String[] params = new String[] { javaCmd, "-cp", classpath, ServiceLauncher.class.getName(), "-id", id, "-st",
+		String[] params = new String[] { javaCmd, "-cp", classpath, 
+				"-Dorg.slf4j.simpleLogger.showShortLogName=true", 
+				ServiceLauncher.class.getName(), "-id", id, "-st",
 				type, "-sc", cfgUrl, "-tt", transportType.getName(), "-tc", transportConfig };
 		return startProcess(params, pkg, cfgName);
 	}

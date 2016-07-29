@@ -1,5 +1,7 @@
 package rook.core.io.service.raspberrypi.gopigo;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,12 @@ public class GoPiGo implements RaspberryPiDevice {
 			
 			// if servo position is configured, but servo enabled is not, permanently enable the servo
 			hw.writeServoEnabled(hasContent(config.getServoPosition()) && !hasContent(config.getServoEnabled()));
+		} catch(IOException e) {
+			if(e.getMessage().contains("Cannot open file handle for /dev/i2c")) {
+				throw new InitException("It appears I2C is not enabled. To enable, try: sudo raspi-config -> 'Advanced Options' -> 'I2C' -> '[Yes]'");
+			} else {
+				throw new InitException("Could not start GoPiGo " + config.toString(), e);
+			}
 		} catch(Throwable t) {
 			throw new InitException("Could not start GoPiGo " + config.toString(), t);
 		}

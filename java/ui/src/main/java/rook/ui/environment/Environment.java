@@ -68,9 +68,9 @@ public class Environment {
 			if(routerType != null) {
 				logger.info("Starting " + routerType + " config=" + routerConfig);
 				runtimeManager.startRouter(routerPkg, routerType.getName(), routerConfig);
-				logger.info("Giving Router 1 second to spin up");
+				logger.info("Giving Router 3 seconds to spin up");
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(3000);
 				} catch (InterruptedException e) {
 	
 				}

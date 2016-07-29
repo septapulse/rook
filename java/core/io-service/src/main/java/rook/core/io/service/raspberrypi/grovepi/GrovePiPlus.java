@@ -1,5 +1,7 @@
 package rook.core.io.service.raspberrypi.grovepi;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +51,12 @@ public class GrovePiPlus implements RaspberryPiDevice {
 			addDigitalPin(ioManager, hw, 6, config.getD6());
 			addDigitalPin(ioManager, hw, 7, config.getD7());
 			addDigitalPin(ioManager, hw, 8, config.getD8());
+		} catch(IOException e) {
+			if(e.getMessage().contains("Cannot open file handle for /dev/i2c")) {
+				throw new InitException("It appears I2C is not enabled. To enable, try: sudo raspi-config -> 'Advanced Options' -> 'I2C' -> '[Yes]'");
+			} else {
+				throw new InitException("Could not start GrovePiPlus " + config.toString(), e);
+			}
 		} catch(Throwable t) {
 			throw new InitException("Could not start GrovePiPlus " + config.toString(), t);
 		}
