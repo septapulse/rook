@@ -6,12 +6,20 @@
 	<artifactId>rook-parent</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
+	
+	<developers>
+		<developer>
+			<name>Eric Thill</name>
+			<email>ejthill@gmail.com</email>
+		</developer>
+	</developers>
 
 	<modules>
 		<module>api</module>
 		<module>core</module>
 		<module>ui</module>
-  </modules>
+		<module>examples</module>
+	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

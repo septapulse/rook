@@ -1,10 +1,7 @@
 package rook.api.transport.consumer;
 
-import java.util.function.Consumer;
-
 import rook.api.RID;
 import rook.api.transport.GrowableBuffer;
-import rook.api.transport.event.UnicastMessage;
 
 /**
  * Filters the incoming {@link UnicastMessage} by group and by the sending
@@ -14,10 +11,10 @@ import rook.api.transport.event.UnicastMessage;
  * @author Eric Thill
  *
  */
-public class FilteringUnicastMessageConsumer implements Consumer<UnicastMessage<GrowableBuffer>> {
+public class FilteringUnicastMessageConsumer implements ProxyUnicastMessageConsumer<GrowableBuffer> {
 
 	private final RID filterFrom;
-	private final Consumer<UnicastMessage<GrowableBuffer>> consumer;
+	private final UnicastMessageConsumer<GrowableBuffer> consumer;
 
 	/**
 	 * FilteringUnicastMessageConsumer constructor
@@ -29,15 +26,20 @@ public class FilteringUnicastMessageConsumer implements Consumer<UnicastMessage<
 	 * @param consumer
 	 *            The underlying consumer
 	 */
-	public FilteringUnicastMessageConsumer(RID filterFrom, Consumer<UnicastMessage<GrowableBuffer>> consumer) {
+	public FilteringUnicastMessageConsumer(RID filterFrom, UnicastMessageConsumer<GrowableBuffer> consumer) {
 		this.filterFrom = filterFrom;
 		this.consumer = consumer;
 	}
-
+	
 	@Override
-	public void accept(UnicastMessage<GrowableBuffer> t) {
-		if (filterFrom == null || t.getFrom().equals(filterFrom)) {
-			consumer.accept(t);
-		}
+	public void onUnicastMessage(RID from, RID to, GrowableBuffer payload) {
+		if (filterFrom != null && !filterFrom.equals(from))
+			return;
+		consumer.onUnicastMessage(from, to, payload);
+	}
+	
+	@Override
+	public UnicastMessageConsumer<GrowableBuffer> getBaseConsumer() {
+		return consumer;
 	}
 }

@@ -30,7 +30,7 @@ public final class RID {
 		return id;
 	}
 
-	private final boolean unmodifiable;
+	private final boolean immutable;
 	private long value;
 	
 	public RID() {
@@ -41,13 +41,13 @@ public final class RID {
 		this(value, false);
 	}
 	
-	private RID(long value, boolean unmodifiable) {
-		this.unmodifiable = unmodifiable;
+	private RID(long value, boolean immutable) {
+		this.immutable = immutable;
 		this.value = value;
 	}
 
 	public void parse(String str) {
-		if(unmodifiable) {
+		if(immutable) {
 			throw new UnsupportedOperationException("Unmodifiable");
 		}
 		if (str.length() == 0 || str.length() > 12) {
@@ -96,8 +96,8 @@ public final class RID {
 		return RID.create(value);
 	}
 
-	public RID unmodifiable() {
-		if(unmodifiable) {
+	public RID immutable() {
+		if(immutable) {
 			return this;
 		} else {
 			return new RID(value, true);
@@ -105,14 +105,14 @@ public final class RID {
 	}
 
 	public void copyFrom(RID src) {
-		if(unmodifiable) {
+		if(immutable) {
 			throw new UnsupportedOperationException("Unmodifiable");
 		}
 		this.value = src.value;
 	}
 
 	public void setValue(long value) {
-		if(unmodifiable) {
+		if(immutable) {
 			throw new UnsupportedOperationException("Unmodifiable");
 		}
 		this.value = value;

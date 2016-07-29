@@ -2,9 +2,6 @@ package rook.core.io.proxy.message;
 
 import rook.api.RID;
 import rook.api.transport.GrowableBuffer;
-import rook.api.util.BufferUtil;
-import uk.co.real_logic.agrona.MutableDirectBuffer;
-import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 
 /**
  * A capabilit that represents a single input or output
@@ -13,7 +10,6 @@ import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
  *
  */
 public class Cap {
-	private final MutableDirectBuffer directBuffer = new UnsafeBuffer(BufferUtil.EMPTY_BUFFER);
 	private final RID id = new RID();
 	private CapType capType;
 	private DataType dataType;
@@ -82,26 +78,25 @@ public class Cap {
 	}
 	
 	public int deserialize(GrowableBuffer buffer, int off) {
-		directBuffer.wrap(buffer.getBytes());
-		id.setValue(directBuffer.getLong(off));
+		id.setValue(buffer.direct().getLong(off));
 		off+=8;
-		capType = CapType.fromValue(directBuffer.getByte(off));
+		capType = CapType.fromValue(buffer.direct().getByte(off));
 		off++;
-		dataType = DataType.fromValue(directBuffer.getByte(off));
+		dataType = DataType.fromValue(buffer.direct().getByte(off));
 		off++;
 		if(dataType == DataType.INTEGER) {
-			minValue = directBuffer.getLong(off);
+			minValue = buffer.direct().getLong(off);
 			off+=8;
-			maxValue = directBuffer.getLong(off);
+			maxValue = buffer.direct().getLong(off);
 			off+=8;
-			increment = directBuffer.getLong(off);
+			increment = buffer.direct().getLong(off);
 			off+=8;
 		} else if(dataType == DataType.FLOAT) {
-			minValue = directBuffer.getDouble(off);
+			minValue = Double.longBitsToDouble(buffer.direct().getLong(off));
 			off+=8;
-			maxValue = directBuffer.getDouble(off);
+			maxValue = Double.longBitsToDouble(buffer.direct().getLong(off));
 			off+=8;
-			increment = directBuffer.getDouble(off);
+			increment = Double.longBitsToDouble(buffer.direct().getLong(off));
 			off+=8;
 		}
 		
@@ -109,33 +104,32 @@ public class Cap {
 	}
 	
 	public void serialize(GrowableBuffer buffer) {
-		int off = buffer.getLength();
+		int off = buffer.length();
 		buffer.reserve(off+getSerializedSize(), true);
-		directBuffer.wrap(buffer.getBytes());
 		
-		directBuffer.putLong(off, id.toValue());
+		buffer.direct().putLong(off, id.toValue());
 		off+=8;
-		directBuffer.putByte(off, capType.getValue());
+		buffer.direct().putByte(off, capType.getValue());
 		off++;
-		directBuffer.putByte(off, dataType.getValue());
+		buffer.direct().putByte(off, dataType.getValue());
 		off++;
 		if(dataType == DataType.INTEGER) {
-			directBuffer.putLong(off, (long)minValue);
+			buffer.direct().putLong(off, (long)minValue);
 			off+=8;
-			directBuffer.putLong(off, (long)maxValue);
+			buffer.direct().putLong(off, (long)maxValue);
 			off+=8;
-			directBuffer.putLong(off, (long)increment);
+			buffer.direct().putLong(off, (long)increment);
 			off+=8;
 		} else if(dataType == DataType.FLOAT) {
-			directBuffer.putDouble(off, minValue);
+			buffer.direct().putLong(off, Double.doubleToLongBits(minValue));
 			off+=8;
-			directBuffer.putDouble(off, maxValue);
+			buffer.direct().putLong(off, Double.doubleToLongBits(maxValue));
 			off+=8;
-			directBuffer.putDouble(off, increment);
+			buffer.direct().putLong(off, Double.doubleToLongBits(increment));
 			off+=8;
 		}
 		
-		buffer.setLength(off);
+		buffer.length(off);
 	}
 	
 	public int getSerializedSize() {

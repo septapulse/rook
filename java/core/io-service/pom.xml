@@ -4,11 +4,18 @@
 
 	<parent>
 		<groupId>rook.core</groupId>
-		<artifactId>core-parent</artifactId>
+		<artifactId>core</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>io-service</artifactId>
+	
+	<developers>
+		<developer>
+			<name>Eric Thill</name>
+			<email>ejthill@gmail.com</email>
+		</developer>
+	</developers>
 
 	<dependencies>
 		<dependency>

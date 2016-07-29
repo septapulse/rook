@@ -1,9 +1,7 @@
 package rook.api.transport;
 
-import java.util.function.Consumer;
-
 import rook.api.RID;
-import rook.api.transport.event.UnicastMessage;
+import rook.api.transport.consumer.UnicastMessageConsumer;
 
 /**
  * Transport for unicast messages. Unicast messages are sent directly to an
@@ -21,7 +19,7 @@ public interface UnicastTransport {
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void addMessageConsumer(Consumer<UnicastMessage<GrowableBuffer>> consumer);
+	void addMessageConsumer(UnicastMessageConsumer<GrowableBuffer> consumer);
 
 	/**
 	 * Add a deserializing unicast message consumer that will receive messages
@@ -33,7 +31,7 @@ public interface UnicastTransport {
 	 *            The deserializer that converts a binary message into an object
 	 *            to be consumed
 	 */
-	<T> void addMessageConsumer(Consumer<UnicastMessage<T>> consumer, Deserializer<T> deserializer);
+	<T> void addMessageConsumer(UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer);
 
 	/**
 	 * Add a unicast message consumer that will receive messages addressed to
@@ -45,7 +43,7 @@ public interface UnicastTransport {
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void addMessageConsumer(RID from, Consumer<UnicastMessage<GrowableBuffer>> consumer);
+	void addMessageConsumer(RID from, UnicastMessageConsumer<GrowableBuffer> consumer);
 
 	/**
 	 * Add a deserializing unicast message consumer that will receive messages
@@ -60,7 +58,7 @@ public interface UnicastTransport {
 	 *            The deserializer that converts a binary message into an object
 	 *            to be consumed
 	 */
-	<T> void addMessageConsumer(RID from, Consumer<UnicastMessage<T>> consumer, Deserializer<T> deserializer);
+	<T> void addMessageConsumer(RID from, UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer);
 
 	/**
 	 * Remove a consumer. The given consumer will stop receiving message
@@ -69,7 +67,7 @@ public interface UnicastTransport {
 	 * @param consumer
 	 *            The consumer to remove
 	 */
-	<T> void removeMessageConsumer(Consumer<UnicastMessage<T>> consumer);
+	<T> void removeMessageConsumer(UnicastMessageConsumer<T> consumer);
 
 	/**
 	 * Send a unicast message to the given service
@@ -100,7 +98,7 @@ public interface UnicastTransport {
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void incognito_addMessageConsumer(Consumer<UnicastMessage<GrowableBuffer>> consumer);
+	void incognito_addMessageConsumer(UnicastMessageConsumer<GrowableBuffer> consumer);
 
 	/**
 	 * Add a deserializing unicast message consumer that will receive messages
@@ -112,7 +110,7 @@ public interface UnicastTransport {
 	 *            The deserializer that converts a binary message into an object
 	 *            to be consumed
 	 */
-	<T> void incognito_addMessageConsumer(Consumer<UnicastMessage<T>> consumer, Deserializer<T> deserializer);
+	<T> void incognito_addMessageConsumer(UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer);
 
 	/**
 	 * Remove an incognito consumer. The given consumer will stop receiving
@@ -121,7 +119,7 @@ public interface UnicastTransport {
 	 * @param consumer
 	 *            The consumer to remove
 	 */
-	<T> void incognito_removeMessageConsumer(Consumer<UnicastMessage<T>> consumer);
+	<T> void incognito_removeMessageConsumer(UnicastMessageConsumer<T> consumer);
 
 	/**
 	 * Send a unicast message as any service. This method is intended to be used

@@ -1,7 +1,9 @@
 package rook.api.transport;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
+
+import org.agrona.ExpandableArrayBuffer;
+import org.agrona.MutableDirectBuffer;
 
 /**
  * A buffer backed by a byte[] array that contains a variable length and can
@@ -12,175 +14,187 @@ import java.util.Arrays;
  */
 public class GrowableBuffer {
 
-	public static GrowableBuffer allocate(int defaultCapacity) {
-		return new GrowableBuffer(new byte[defaultCapacity]);
+	public static GrowableBuffer allocate(int initialCapacity) {
+		return new GrowableBuffer(initialCapacity);
 	}
+	public static GrowableBuffer copyFrom(byte[] src) {
+		return new GrowableBuffer(src);
+	}
+	
+	private static final char[] HEX = "0123456789ABCDEF".toCharArray();
+	private static final byte ZERO = 0;
 
 	private final int defaultCapacity;
-	private byte[] bytes;
+	private MutableDirectBuffer direct;
 	private int length;
-
-	private GrowableBuffer(byte[] bytes) {
-		this.bytes = bytes;
-		defaultCapacity = bytes.length;
+	
+	private GrowableBuffer(byte[] buf) {
+		this(buf.length);
+		direct.putBytes(0, buf);
+		length(buf.length);
+	}
+	
+	private GrowableBuffer(int initialCapacity) {
+		this.defaultCapacity = initialCapacity;
+		direct = new ExpandableArrayBuffer(initialCapacity);
 	}
 
 	/**
-	 * Returns the buffer to it's original capacity, and optionally will fill it
-	 * with 0's
+	 * Resize the buffer to the initial capacity. This method does not clear the
+	 * buffer. If a clean buffer is required, call clean() after calling this
+	 * method.
 	 * 
-	 * @param fill
-	 *            Specifies if the underling buffer should be filled with 0's
-	 * @return this (for stringing together commands)
+	 * @return this
 	 */
-	public GrowableBuffer reset(boolean fill) {
-		if (bytes.length != defaultCapacity) {
-			bytes = new byte[defaultCapacity];
-		} else if (fill) {
-			Arrays.fill(bytes, (byte) 0);
+	public GrowableBuffer reset() {
+		if(direct.byteArray().length != defaultCapacity) {
+			direct = new ExpandableArrayBuffer(defaultCapacity);
 		}
 		length = 0;
 		return this;
 	}
 
 	/**
-	 * Grows the underlying buffer to the given length
+	 * Fill the current underlying buffer with with 0's
 	 * 
-	 * @param length
-	 *            The required size of the payload that this buffer will need to
-	 *            contain
-	 * @param copy
-	 *            If true, existing contents will be copied if the underlying
-	 *            buffer is grown
-	 * @return this (for stringing together commands)
+	 * @return this
 	 */
-	public GrowableBuffer reserve(int length, boolean copy) {
-		if (length > bytes.length) {
-			if(copy) {
-				byte[] existing = bytes;
-				bytes = new byte[length];
-				System.arraycopy(existing, 0, bytes, 0, existing.length);
+	public GrowableBuffer clear() {
+		Arrays.fill(direct.byteArray(), ZERO);
+		return this;
+	}
+
+	/**
+	 * Return the current length
+	 * 
+	 * @return length
+	 */
+	public int length() {
+		return length;
+	}
+
+	/**
+	 * Resize the underlying buffer to fit the given capacity. Optionally, the
+	 * existing data in the buffer data can be copied on a resize using
+	 * keep=true.
+	 * 
+	 * @param capacity
+	 *            Required capacity
+	 * @param keep
+	 *            If the existing data in the buffer needs to be kept after a
+	 *            resize.
+	 * @return this
+	 */
+	public GrowableBuffer reserve(int capacity, boolean keep) {
+		if (capacity > direct.capacity()) {
+			if(keep) {
+				direct.checkLimit(capacity);
 			} else {
-				bytes = new byte[length];
+				direct = new ExpandableArrayBuffer(capacity);
 			}
 		}
 		return this;
 	}
 
 	/**
-	 * Get the underling byte buffer
-	 * 
-	 * @return the underlying byte buffer
-	 */
-	public byte[] getBytes() {
-		return bytes;
-	}
-
-	/**
-	 * Get the current payload length
-	 * 
-	 * @return the length
-	 */
-	public int getLength() {
-		return length;
-	}
-
-	/**
-	 * Set the underling payload length
+	 * Set the underlying length. The buffer will be resized as necessary.
 	 * 
 	 * @param length
-	 * @return this (for stringing together commands)
+	 * @return this
 	 */
-	public GrowableBuffer setLength(int length) {
+	public GrowableBuffer length(int length) {
+		reserve(length, true);
 		this.length = length;
 		return this;
 	}
 
 	/**
-	 * Add the given buffer to the end of the current payload
+	 * Return the underlying byte array
 	 * 
-	 * @param src
-	 *            the buffer to be added
-	 * @return this (for stringing together commands)
+	 * @return byte array
 	 */
-	public GrowableBuffer put(ByteBuffer src) {
-		int srcLen = src.remaining();
-		reserve(length + srcLen, true);
-		src.get(bytes, length, srcLen);
-		length += srcLen;
-		return this;
+	public byte[] bytes() {
+		return direct.byteArray();
 	}
 
 	/**
-	 * Add the given buffer to the end of the current payload
+	 * Return the underlying MutableDirectBuffer backed by the underlying
+	 * byte-buffer.
 	 * 
-	 * @param src
-	 *            the buffer to be added
-	 * @return this (for stringing together commands)
+	 * @return DirectBuffer
 	 */
-	public GrowableBuffer put(GrowableBuffer src) {
-		put(src.bytes, 0, src.length);
-		return this;
+	public MutableDirectBuffer direct() {
+		return direct;
 	}
-
+	
 	/**
-	 * Add the given buffer to the end of the current payload
-	 * 
-	 * @param src
-	 *            the buffer to be added
-	 * @return this (for stringing together commands)
+	 * Copy the given buffer's data to this buffer.
+	 * @param dest
 	 */
-	public GrowableBuffer put(byte[] src) {
-		return put(src, 0, src.length);
-	}
-
-	/**
-	 * Add the given buffer to the end of the current payload
-	 * 
-	 * @param src
-	 *            the buffer to be added
-	 * @param off
-	 *            the src buffer offset
-	 * @param len
-	 *            the src buffer length
-	 * @return this (for stringing together commands)
-	 */
-	public GrowableBuffer put(byte[] src, int off, int len) {
-		reserve(length + len, true);
-		System.arraycopy(src, off, bytes, length, len);
-		length += len;
-		return this;
-	}
-
-	/**
-	 * Overwrite the content of this buffer with the content of the given buffer
-	 * 
-	 * @param src
-	 *            the buffer to copy from
-	 * @return this (for stringing together commands)
-	 */
-	public GrowableBuffer copyFrom(GrowableBuffer src) {
-		length = 0;
+	public void copyFrom(GrowableBuffer src) {
 		reserve(src.length, false);
-		put(src);
-		return this;
+		direct.putBytes(0, src.bytes(), 0, src.length);
+		length(src.length);
+	}
+
+	/**
+	 * Copy this buffer's data to the given buffer.
+	 * 
+	 * @param dest
+	 *            The destination buffer
+	 */
+	public void copyTo(GrowableBuffer dest) {
+		dest.reserve(length, false);
+		dest.direct.putBytes(0, bytes(), 0, length);
+		dest.length(length);
+	}
+
+	/**
+	 * Copy this buffer's data to a new buffer. The new buffer's capacity
+	 * will be equal to the length (extra capacity will be trimmed)
+	 * 
+	 * @return the new buffer
+	 */
+	public GrowableBuffer copy() {
+		GrowableBuffer copy = new GrowableBuffer(length);
+		copyTo(copy);
+		return copy;
 	}
 
 	@Override
-	public String toString() {
-		return "0x" + toHex(bytes, 0, length);
+	public int hashCode() {
+		int result = 1;
+		for(int i = 0; i < length; i++) {
+			result = 31 * result + direct.getByte(i);
+		}
+		return result;
 	}
 	
-	private static String toHex(byte[] b, int off, int len) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < len; i++) {
-			String hex = Integer.toHexString(b[off + i] & 0xFF).toUpperCase();
-			if (hex.length() == 1) {
-				sb.append("0");
-			}
-			sb.append(hex);
-		}
-		return sb.toString();
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GrowableBuffer other = (GrowableBuffer) obj;
+		if (length != other.length)
+			return false;
+		for(int i = 0; i < length; i++)
+			if(direct.getByte(i) != other.direct.getByte(i))
+				return false;
+		return true;
 	}
-
+	@Override
+	public String toString() {
+		char[] hex = new char[length * 2];
+		for (int i = 0; i < length; i++) {
+			int val = direct.getByte(i) & 0xFF;
+			hex[i * 2] = HEX[val >>> 4];
+			hex[i * 2 + 1] = HEX[val & 0x0F];
+		}
+		return "[ " + new String(hex) + " ]";
+	}
+	
 }

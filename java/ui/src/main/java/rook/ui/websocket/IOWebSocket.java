@@ -1,6 +1,7 @@
 package rook.ui.websocket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import rook.api.RID;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.IOValue;
@@ -41,21 +43,19 @@ public class IOWebSocket {
 	
 	public IOWebSocket(Environment environment) {
 		this.environment = environment;
-		environment.ioProxy().inputs().addBatchConsumer(this::processInput);
-		environment.ioProxy().outputs().addBatchConsumer(this::processOutput);
-		environment.ioProxy().caps().addConsumer(this::processCaps);
+		environment.getIoProxy().inputs().addBatchConsumer(this::processInput);
+		environment.getIoProxy().outputs().addBatchConsumer(this::processOutput);
+		environment.getIoProxy().caps().addConsumer(this::processCaps);
 	}
 	
-	public void reset() {
-		
-	}
-
 	@OnWebSocketMessage
 	public void onText(Session session, String message) throws IOException {
 		IORequest req = gson.fromJson(message, IORequest.class);
 		switch (req.getType()) {
 		case "stream":
-			List<Cap> caps = environment.ioProxy().caps().getCaps();
+			// may have some old lingering state to clear
+			environment.getIoProxy().reset();
+			List<Cap> caps = environment.getIoProxy().caps().getCaps();
 			IOResponse respInputs = createInputMessage(caps);
 			IOResponse respOutputs = createOutputMessage(caps);
 			session.getRemote().sendString(gson.toJson(respInputs));
@@ -70,7 +70,7 @@ public class IOWebSocket {
 		respInputs.setType(TYPE_INPUTS);
 		for (Cap c : caps) {
 			if (c.getCapType() == CapType.INPUT) {
-				IOValue iov = environment.ioProxy().inputs().getValue(c.getId());
+				IOValue iov = environment.getIoProxy().inputs().getValue(c.getId());
 				String v = iov == null ? null : iov.getValueAsString();
 				respInputs.addValue(new IOResponse.Value().setId(c.getId().toString()).setValue(v));
 			}
@@ -83,7 +83,7 @@ public class IOWebSocket {
 		respOutputs.setType(TYPE_OUTPUTS);
 		for (Cap c : caps) {
 			if (c.getCapType() == CapType.OUTPUT) {
-				IOValue iov = environment.ioProxy().outputs().getValue(c.getId());
+				IOValue iov = environment.getIoProxy().outputs().getValue(c.getId());
 				String v = iov == null ? null : iov.getValueAsString();
 				respOutputs.addValue(new IOResponse.Value().setId(c.getId().toString()).setValue(v));
 			}
@@ -98,19 +98,32 @@ public class IOWebSocket {
 		dispatch(gson.toJson(respOutputs));
 	}
 
-	private void processInput(List<IOValue> values) {
-		dispatch(TYPE_INPUTS, values);
+	private List<IdValuePair> inputs = new ArrayList<>();
+	private synchronized void processInput(RID id, IOValue value, boolean endOfBatch) {
+		// FIXME reuse inputs
+		inputs.add(new IdValuePair().set(id, value));
+		if(endOfBatch) {
+			dispatch(TYPE_INPUTS, inputs);
+			// FIXME reuse outputs
+			inputs.clear();
+		}
 	}
 
-	private void processOutput(List<IOValue> values) {
-		dispatch(TYPE_OUTPUTS, values);
+	private List<IdValuePair> outputs = new ArrayList<>();
+	private synchronized void processOutput(RID id, IOValue value, boolean endOfBatch) {
+		outputs.add(new IdValuePair().set(id, value));
+		if(endOfBatch) {
+			dispatch(TYPE_OUTPUTS, outputs);
+			// FIXME reuse outputs
+			outputs.clear();
+		}
 	}
 	
-	private void dispatch(String type, List<IOValue> values) {
+	private void dispatch(String type, List<IdValuePair> values) {
 		IOResponse resp = new IOResponse();
 		resp.setType(type);
-		for(IOValue v : values) {
-			resp.addValue(new IOResponse.Value().setId(v.getID().toString()).setValue(v.getValueAsString()));
+		for(IdValuePair v : values) {
+			resp.addValue(new IOResponse.Value().setId(v.id.toString()).setValue(v.val.getValueAsString()));
 		}
 		String msg = gson.toJson(resp);
 		dispatch(msg);
@@ -132,6 +145,16 @@ public class IOWebSocket {
 					t.remove();
 				}
 			}
+		}
+	}
+	
+	static class IdValuePair {
+		public final RID id = new RID();
+		public final IOValue val = new IOValue();
+		public IdValuePair set(RID id, IOValue val) {
+			this.id.copyFrom(id);
+			this.val.copyFrom(val);
+			return this;
 		}
 	}
 }

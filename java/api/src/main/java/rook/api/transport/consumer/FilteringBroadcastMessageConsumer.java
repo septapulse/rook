@@ -1,10 +1,7 @@
 package rook.api.transport.consumer;
 
-import java.util.function.Consumer;
-
 import rook.api.RID;
 import rook.api.transport.GrowableBuffer;
-import rook.api.transport.event.BroadcastMessage;
 
 /**
  * Filters the incoming {@link BroadcastMessage} by group and by the sending
@@ -14,11 +11,11 @@ import rook.api.transport.event.BroadcastMessage;
  * @author Eric Thill
  *
  */
-public class FilteringBroadcastMessageConsumer implements Consumer<BroadcastMessage<GrowableBuffer>> {
+public class FilteringBroadcastMessageConsumer implements ProxyBroadcastMessageConsumer<GrowableBuffer> {
 
 	private final RID filterGroup;
 	private final RID filterFrom;
-	private final Consumer<BroadcastMessage<GrowableBuffer>> consumer;
+	private final BroadcastMessageConsumer<GrowableBuffer> consumer;
 
 	/**
 	 * FilteringBroadcastMessageConsumer constructor
@@ -35,23 +32,25 @@ public class FilteringBroadcastMessageConsumer implements Consumer<BroadcastMess
 	 *            The underlying consumer
 	 */
 	public FilteringBroadcastMessageConsumer(RID filterGroup, RID filterFrom,
-			Consumer<BroadcastMessage<GrowableBuffer>> consumer) {
+			BroadcastMessageConsumer<GrowableBuffer> consumer) {
 		this.filterGroup = filterGroup;
 		this.filterFrom = filterFrom;
 		this.consumer = consumer;
 	}
-
+	
 	@Override
-	public void accept(BroadcastMessage<GrowableBuffer> t) {
-		boolean accept = true;
-		if (filterGroup != null && !t.getGroup().equals(filterGroup)) {
-			accept = false;
+	public void onBroadcastMessage(RID from, RID group, GrowableBuffer payload) {
+		if (filterGroup != null && !group.equals(filterGroup)) {
+			return;
 		}
-		if (filterFrom != null && !t.getFrom().equals(filterFrom)) {
-			accept = false;
+		if (filterFrom != null && !from.equals(filterFrom)) {
+			return;
 		}
-		if (accept) {
-			consumer.accept(t);
-		}
+		consumer.onBroadcastMessage(from, group, payload);
+	}
+	
+	@Override
+	public BroadcastMessageConsumer<GrowableBuffer> getBaseConsumer() {
+		return consumer;
 	}
 }

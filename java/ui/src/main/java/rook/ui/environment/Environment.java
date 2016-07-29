@@ -3,11 +3,13 @@ package rook.ui.environment;
 import java.io.File;
 import java.io.IOException;
 
-import rook.api.InitException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import rook.api.RID;
-import rook.api.RookConfig;
-import rook.api.RookRunner;
-import rook.api.Router;
+import rook.api.exception.InitException;
+import rook.api.reflect.Instantiate;
+import rook.api.transport.ControllableTransport;
 import rook.core.io.proxy.IOProxy;
 
 /**
@@ -18,82 +20,94 @@ import rook.core.io.proxy.IOProxy;
  */
 public class Environment {
 
-	private static final String ENVIRONMENT_BUS_CONFIG = "cfg/ui/environment.json";
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final File apiDir;
+	private final File[] serviceDirs;
+	private final File[] cfgDirs;
+	private final Class<?> routerType; 
+	private final String routerConfig; 
+	private final String routerPkg; 
+	private final Class<?> transportType; 
+	private final String transportConfig;
+	private final File runDir; 
+	private final File jreDir;
+	private ControllableTransport rookTransport;
+	private IOProxy ioProxy;
+	private ServiceManager serviceManager;
+	private ConfigManager configManager;
+	private RuntimeManager runtimeManager;
 	
-	private final Log log = new Log();
-	private final File configDir;
-	private final File serviceDir;
-	private final Controller controller;
-	private final ConfigManager configManager;
-	private final Script script;
-	
-	private final Router router;
-	private final UIService uiService;
-	
-	public Environment(File directory, RookConfig proxyConfig) throws InitException {
-		configDir = new File(directory, "cfg/env");
-		serviceDir = new File(directory, "services");
-		controller = new Controller(directory, log::dispatch);
-		configManager = new ConfigManager(configDir, serviceDir);
-		
-		RookRunner rookRunner = new RookRunner();
-		router = rookRunner.instantiate(proxyConfig);
-		uiService = new UIService();
-		router.addService(RID.create("UI"), uiService);
-		router.start();
-		
-		waitForStartup();
-		script = new Script(uiService.getIOProxy());
+	public Environment(Class<?> routerType, String routerConfig, String routerPkg, 
+			Class<?> transportType, String transportConfig, 
+			File platformDir, File userDir, File runDir, File jreDir) throws InitException, IOException {
+		apiDir = new File(platformDir, "api");
+		serviceDirs = new File[] { 
+				new File(userDir,"services"),
+				new File(platformDir,"services") 
+		};
+		cfgDirs = new File[] { 
+				new File(userDir,"cfg"),
+				new File(platformDir,"cfg")
+		};
+		this.routerType = routerType;
+		this.routerConfig = routerConfig;
+		this.routerPkg = routerPkg;
+		this.transportType = transportType;
+		this.transportConfig = transportConfig;
+		this.runDir = runDir;
+		this.jreDir = jreDir;
 	}
 	
-	private void waitForStartup() throws InitException {
-		long start = System.currentTimeMillis();
-		while(uiService.getIOProxy() == null && System.currentTimeMillis()-start < 2000) {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		if(uiService.getIOProxy() == null) {
-			throw new InitException("UI Service was not initialized");
-		}
-	}
-
-	public void start(String config) throws IOException {
-		stop();
-		uiService.getIOProxy().reset();
-		log.clear();
-		controller.start(ENVIRONMENT_BUS_CONFIG, new File(configDir, config).getAbsolutePath());
-		new Thread(this::delayRequestCaps).start();
-	}
-	
-	private void delayRequestCaps() {
+	public void start() throws InitException {
 		try {
-			// TODO configurable sleep time
-			Thread.sleep(3000);
-		} catch (InterruptedException e) { }
-		uiService.getIOProxy().caps().requestCaps();
+			this.serviceManager = new ServiceManager(serviceDirs);
+			this.configManager = new ConfigManager(cfgDirs);
+			this.runtimeManager = new RuntimeManager(transportType, transportConfig,
+					jreDir, apiDir, runDir, serviceDirs, cfgDirs);
+			
+			if(routerType != null) {
+				logger.info("Starting " + routerType + " config=" + routerConfig);
+				runtimeManager.startRouter(routerPkg, routerType.getName(), routerConfig);
+				logger.info("Giving Router 1 second to spin up");
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+	
+				}
+			}
+			
+			logger.info("Creating " + transportType.getName() + " config=" + transportConfig);
+			rookTransport = Instantiate.instantiate(transportType, transportConfig);
+			rookTransport.setServiceId(RID.create("UI"));
+			rookTransport.start();
+			
+			ioProxy = new IOProxy(rookTransport);
+			refreshCache();
+		} catch(InitException e) {
+			throw e;
+		} catch(Throwable t) {
+			throw new InitException("Could not start Environment", t);
+		}
 	}
 	
-	public void stop() {
-		controller.stop();
+	public void refreshCache() {
+		ioProxy.caps().requestCaps();
+		rookTransport.announce().probe();
 	}
 	
-	public IOProxy ioProxy() {
-		return uiService.getIOProxy();
+	public IOProxy getIoProxy() {
+		return ioProxy;
 	}
 	
-	public ConfigManager configManager() {
+	public ServiceManager getServiceManager() {
+		return serviceManager;
+	}
+	
+	public ConfigManager getConfigManager() {
 		return configManager;
 	}
 	
-	public Log log() {
-		return log;
+	public RuntimeManager getRuntimeManager() {
+		return runtimeManager;
 	}
-	
-	public Script script() {
-		return script;
-	}
-	
 }

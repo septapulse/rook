@@ -7,11 +7,17 @@
 	<baseDirectory>.</baseDirectory>
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory>/lib/</outputDirectory>
 		</dependencySet>
 		<dependencySet>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory>/lib/</outputDirectory>
             <scope>provided</scope>
         </dependencySet>
 	</dependencySets>
+	<fileSets>
+		<fileSet>
+			<directory>html</directory>
+			<outputDirectory>/html/</outputDirectory>
+		</fileSet>
+	</fileSets>
 </assembly>

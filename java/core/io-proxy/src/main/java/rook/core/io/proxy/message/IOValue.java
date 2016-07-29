@@ -1,10 +1,6 @@
 package rook.core.io.proxy.message;
 
-import rook.api.RID;
 import rook.api.transport.GrowableBuffer;
-import rook.api.util.BufferUtil;
-import uk.co.real_logic.agrona.MutableDirectBuffer;
-import uk.co.real_logic.agrona.concurrent.UnsafeBuffer;
 
 /**
  * A single value backed by a {@link GrowableBuffer} 
@@ -17,84 +13,60 @@ public class IOValue {
 	private static final byte FALSE = 0;
 	private static final byte TRUE = 1;
 	
-	private final RID id;
 	private final GrowableBuffer value;
-	private final MutableDirectBuffer directBuffer = new UnsafeBuffer(BufferUtil.EMPTY_BUFFER);
 	private PrimitiveType type = PrimitiveType.OPAQUE;
 	
 	public IOValue() {
-		this(8);
+		this.value = GrowableBuffer.allocate(0);
 	}
 	
-	public IOValue(int defaultCapacity) {
-		this.id = RID.create(0);
-		this.value = GrowableBuffer.allocate(defaultCapacity);
-	}
-	
-	public IOValue(RID id, boolean value) {
-		this.id = id;
+	public IOValue(boolean value) {
 		this.value = GrowableBuffer.allocate(1);
 		setValue(value);
 		this.type = PrimitiveType.BOOLEAN;
 	}
 	
-	public IOValue(RID id, int value) {
-		this.id = id;
+	public IOValue(int value) {
 		this.value = GrowableBuffer.allocate(4);
 		setValue(value);
 		this.type = PrimitiveType.TWOS_COMPLIMENT_INT;
 	}
 	
-	public IOValue(RID id, long value) {
-		this.id = id;
+	public IOValue(long value) {
 		this.value = GrowableBuffer.allocate(8);
 		setValue(value);
 		this.type = PrimitiveType.TWOS_COMPLIMENT_INT;
 	}
 	
-	public IOValue(RID id, float value) {
-		this.id = id;
+	public IOValue(float value) {
 		this.value = GrowableBuffer.allocate(4);
 		setValue(value);
 		this.type = PrimitiveType.IEEE_754_FLOAT;
 	}
 	
-	public IOValue(RID id, double value) {
-		this.id = id;
+	public IOValue(double value) {
 		this.value = GrowableBuffer.allocate(8);
 		setValue(value);
 		this.type = PrimitiveType.IEEE_754_FLOAT;
 	}
 
-	public IOValue(RID id, GrowableBuffer value) {
-		this(id, value, PrimitiveType.OPAQUE);
+	public IOValue(GrowableBuffer value) {
+		this(value, PrimitiveType.OPAQUE);
 	}
 	
-	public IOValue(RID id, GrowableBuffer value, PrimitiveType type) {
-		this.id = id;
-		this.value = GrowableBuffer.allocate(value.getLength());
+	public IOValue(GrowableBuffer value, PrimitiveType type) {
+		this.value = GrowableBuffer.allocate(value.length());
 		setValue(value);
 		this.type = type;
 	}
 	
 	public IOValue copy() {
-		return new IOValue(id, value, type);
+		return new IOValue(value, type);
 	}
 	
 	public void copyFrom(IOValue src) {
-		this.id.setValue(src.id.toValue());
 		this.value.copyFrom(src.value);
-		this.directBuffer.wrap(this.value.getBytes());
 		this.type = src.type;
-	}
-	
-	public RID getID() {
-		return id;
-	}
-	
-	public IOValue setID(RID id) {
-		this.id.setValue(id.toValue());
-		return this;
 	}
 	
 	public PrimitiveType getType() {
@@ -103,54 +75,46 @@ public class IOValue {
 	
 	public IOValue setValue(boolean value) {
 		this.value.reserve(1, false);
-		directBuffer.wrap(this.value.getBytes());
-		directBuffer.putByte(0, value ? TRUE : FALSE);
-		this.value.setLength(4);
+		this.value.direct().putByte(0, value ? TRUE : FALSE);
+		this.value.length(1);
 		this.type = PrimitiveType.BOOLEAN;
 		return this;
 	}
 	
 	public IOValue setValue(int value) {
 		this.value.reserve(4, false);
-		directBuffer.wrap(this.value.getBytes());
-		directBuffer.putInt(0, value);
-		this.value.setLength(4);
+		this.value.direct().putInt(0, value);
+		this.value.length(4);
 		this.type = PrimitiveType.TWOS_COMPLIMENT_INT;
 		return this;
 	}
 	
 	public IOValue setValue(long value) {
 		this.value.reserve(8, false);
-		directBuffer.wrap(this.value.getBytes());
-		directBuffer.putLong(0, value);
-		this.value.setLength(8);
+		this.value.direct().putLong(0, value);
+		this.value.length(8);
 		this.type = PrimitiveType.TWOS_COMPLIMENT_INT;
 		return this;
 	}
 	
 	public IOValue setValue(float value) {
 		this.value.reserve(4, false);
-		directBuffer.wrap(this.value.getBytes());
-		directBuffer.putFloat(0, value);
-		this.value.setLength(4);
+		this.value.direct().putInt(0, Float.floatToIntBits(value));
+		this.value.length(4);
 		this.type = PrimitiveType.IEEE_754_FLOAT;
 		return this;
 	}
 	
 	public IOValue setValue(double value) {
 		this.value.reserve(8, false);
-		directBuffer.wrap(this.value.getBytes());
-		directBuffer.putDouble(0, value);
-		this.value.setLength(8);
+		this.value.direct().putLong(0, Double.doubleToLongBits(value));
+		this.value.length(8);
 		this.type = PrimitiveType.IEEE_754_FLOAT;
 		return this;
 	}
 	
 	public IOValue setValue(GrowableBuffer value) {
-		this.value.reserve(value.getLength(), false);
-		directBuffer.wrap(this.value.getBytes());
-		System.arraycopy(value.getBytes(), 0, this.value.getBytes(), 0, value.getLength());
-		this.value.setLength(value.getLength());
+		this.value.copyFrom(value);
 		this.type = PrimitiveType.OPAQUE;
 		return this;
 	}
@@ -160,8 +124,8 @@ public class IOValue {
 	}
 	
 	public boolean getValueAsBoolean() {
-		for(int i = 0; i < value.getLength(); i++) {
-			if(value.getBytes()[i] != 0) {
+		for(int i = 0; i < value.length(); i++) {
+			if(value.bytes()[i] != 0) {
 				return true;
 			}
 		}
@@ -186,14 +150,14 @@ public class IOValue {
 		} else if(type == PrimitiveType.IEEE_754_FLOAT) {
 			return (long)getValueAsDouble();
 		} else if(type == PrimitiveType.TWOS_COMPLIMENT_INT) {
-			if(value.getLength() == 8) {
-				return directBuffer.getLong(0);
-			} else if(value.getLength() == 4) {
-				return directBuffer.getInt(0);
-			} else if(value.getLength() == 2) {
-				return directBuffer.getShort(0);
-			} else if(value.getLength() == 1) {
-				return directBuffer.getByte(0);
+			if(value.length() == 8) {
+				return this.value.direct().getLong(0);
+			} else if(value.length() == 4) {
+				return this.value.direct().getInt(0);
+			} else if(value.length() == 2) {
+				return this.value.direct().getShort(0);
+			} else if(value.length() == 1) {
+				return this.value.direct().getByte(0);
 			} else {
 				throw new NumberFormatException(value.toString());
 			}
@@ -212,10 +176,10 @@ public class IOValue {
 		} else if(type == PrimitiveType.TWOS_COMPLIMENT_INT) {
 			return (double)getValueAsLong();
 		} else if(type == PrimitiveType.IEEE_754_FLOAT) {
-			if(value.getLength() == 8) {
-				return directBuffer.getDouble(0);
-			} else if(value.getLength() == 4) {
-				return directBuffer.getFloat(0);
+			if(value.length() == 8) {
+				return Double.longBitsToDouble(this.value.direct().getLong(0));
+			} else if(value.length() == 4) {
+				return Float.intBitsToFloat(this.value.direct().getInt(0));
 			} else {
 				throw new NumberFormatException(value.toString());
 			}
@@ -244,7 +208,7 @@ public class IOValue {
 		} else if(type == PrimitiveType.IEEE_754_FLOAT) {
 			return Double.toString(getValueAsDouble());
 		} else if(type == PrimitiveType.UTF_8) {
-			return directBuffer.getStringWithoutLengthUtf8(0, value.getLength());
+			return this.value.direct().getStringWithoutLengthUtf8(0, value.length());
 		} else {
 			return value.toString();
 		}
@@ -252,43 +216,40 @@ public class IOValue {
 	}
 	
 	public int deserialize(GrowableBuffer buffer, int off) {
-		directBuffer.wrap(buffer.getBytes());
-		id.setValue(directBuffer.getLong(off));
-		off += 8;
-		type = PrimitiveType.fromValue(directBuffer.getByte(off));
+//		id.setValue(buffer.direct().getLong(off));
+//		off += 8;
+		type = PrimitiveType.fromValue(buffer.direct().getByte(off));
 		off += 1;
-		int len = directBuffer.getInt(off);
+		int len = buffer.direct().getInt(off);
 		off += 4;
-		value.setLength(0);
+		value.length(0);
 		value.reserve(len, false);
-		value.put(buffer.getBytes(), off, len);
-		directBuffer.wrap(value.getBytes());
+		value.direct().putBytes(0, buffer.bytes(), off, len);
+		value.length(len);
 		return getSerializedLength();
 	}
 	
 	public void serialize(GrowableBuffer buffer) {
-		buffer.reserve(buffer.getLength()+getSerializedLength(), true);
-		directBuffer.wrap(buffer.getBytes());
-		int off = buffer.getLength();
-		directBuffer.putLong(off, id.toValue());
-		off += 8;
-		directBuffer.putByte(off, type.getValue());
+		buffer.reserve(buffer.length()+getSerializedLength(), true);
+		int off = buffer.length();
+//		buffer.direct().putLong(off, id.toValue());
+//		off += 8;
+		buffer.direct().putByte(off, type.getValue());
 		off += 1;
-		directBuffer.putInt(off, value.getLength());
+		buffer.direct().putInt(off, value.length());
 		off += 4;
-		directBuffer.putBytes(off, value.getBytes(), 0, value.getLength());
-		off += value.getLength();
-		buffer.setLength(off);
-		directBuffer.wrap(value.getBytes());
+		buffer.direct().putBytes(off, value.bytes(), 0, value.length());
+		off += value.length();
+		buffer.length(off);
 	}
 	
 	public int getSerializedLength() {
-		return 1 + 4 + 8 + value.getLength();
+		return 1 + 4 + value.length();
 	}
 	
 	@Override
 	public String toString() {
-		return "IOValue [id=" + id + ", value=" + getValueAsString() + "]";
+		return getValueAsString();
 	}
 	
 }

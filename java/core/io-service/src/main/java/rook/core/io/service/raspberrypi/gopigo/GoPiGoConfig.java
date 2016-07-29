@@ -33,11 +33,13 @@ public class GoPiGoConfig {
 	private String ultrasonicDistance;
 	@ConfigurableInteger(comment = "Voltage Input ID")
 	private String voltage;
-	
+	@ConfigurableInteger(comment = "I2C Throttle Interval Millis", defaultValue = "20")
+	private long i2cThrottleIntervalMillis = 20;
+
 	public Byte getBus() {
 		return bus;
 	}
-	
+
 	public Byte getAddress() {
 		return address;
 	}
@@ -82,12 +84,17 @@ public class GoPiGoConfig {
 		return voltage;
 	}
 
+	public long getI2cThrottleIntervalMillis() {
+		return i2cThrottleIntervalMillis;
+	}
+
 	@Override
 	public String toString() {
 		return "GoPiGoConfig [bus=" + bus + ", address=" + address + ", encoderLeft=" + encoderLeft + ", encoderRight="
 				+ encoderRight + ", ledLeft=" + ledLeft + ", ledRight=" + ledRight + ", motorLeft=" + motorLeft
 				+ ", motorRight=" + motorRight + ", servoPosition=" + servoPosition + ", servoEnabled=" + servoEnabled
-				+ ", ultrasonicDistance=" + ultrasonicDistance + ", voltage=" + voltage + "]";
+				+ ", ultrasonicDistance=" + ultrasonicDistance + ", voltage=" + voltage + ", i2cThrottleIntervalMillis="
+				+ i2cThrottleIntervalMillis + "]";
 	}
-	
+
 }

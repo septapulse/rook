@@ -2,8 +2,8 @@ package rook.core.io.service.dummy;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -19,6 +19,7 @@ import rook.core.io.service.IOOutput;
 public class DummyIOOutput implements IOOutput {
 
 	private final Cap cap;
+	private final RID id;
 	
 	public DummyIOOutput(RID id, DataType dataType) {
 		cap = new Cap()
@@ -38,6 +39,7 @@ public class DummyIOOutput implements IOOutput {
 					.setMinValue(0)
 					.setMaxValue(255);
 		}
+		this.id = id.immutable();
 	}
 
 	@Override
@@ -55,6 +57,11 @@ public class DummyIOOutput implements IOOutput {
 		
 	}
 
+	@Override
+	public RID id() {
+		return id;
+	}
+	
 	@Override
 	public Cap cap() {
 		return cap;

@@ -21,7 +21,9 @@ public class GoPiGoEncoderLeft extends GoPiGoEncoder {
 	
 	@Override
 	protected int readValue() throws IOException {
-		return hw.readLeftEncoder();
+		synchronized (hw) {
+			return hw.readLeftEncoder();
+		}
 	}
 
 }

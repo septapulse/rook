@@ -9,6 +9,5 @@ package rook.api.transport;
  *            The type that will be serialized into a buffer
  */
 public interface Serializer<T> {
-
-	GrowableBuffer serialize(T msg);
+	void serialize(T msg, GrowableBuffer dest);
 }

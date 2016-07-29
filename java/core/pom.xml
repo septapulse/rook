@@ -9,14 +9,19 @@
 	</parent>
 
 	<groupId>rook.core</groupId>
-	<artifactId>core-parent</artifactId>
+	<artifactId>core</artifactId>
 	<packaging>pom</packaging>
+	
+	<developers>
+		<developer>
+			<name>Eric Thill</name>
+			<email>ejthill@gmail.com</email>
+		</developer>
+	</developers>
 
 	<modules>
-		<module>lang</module>
 		<module>io-proxy</module>
 		<module>io-service</module>
-		<module>mqtt-service</module>
 	 </modules>
 
 	<properties>

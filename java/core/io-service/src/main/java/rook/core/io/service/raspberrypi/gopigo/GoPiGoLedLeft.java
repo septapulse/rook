@@ -2,8 +2,8 @@ package rook.core.io.service.raspberrypi.gopigo;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -28,7 +28,7 @@ public class GoPiGoLedLeft implements IOOutput {
 	
 	public GoPiGoLedLeft(RID id, GoPiGoHardware hw) {
 		this.hw = hw;
-		this.cap.setID(id);
+		this.cap.setID(id.immutable());
 	}
 	
 	@Override
@@ -43,7 +43,14 @@ public class GoPiGoLedLeft implements IOOutput {
 
 	@Override
 	public void write(IOValue value) throws IOException {
-		hw.writeLeftLed(value.getValueAsBoolean());
+		synchronized (hw) {
+			hw.writeLeftLed(value.getValueAsBoolean());
+		}
+	}
+	
+	@Override
+	public RID id() {
+		return cap.getId();
 	}
 
 	@Override

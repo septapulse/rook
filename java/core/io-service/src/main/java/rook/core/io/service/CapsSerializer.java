@@ -14,22 +14,18 @@ import rook.core.io.proxy.message.Cap;
  */
 public class CapsSerializer implements Serializer<List<Cap>> {
 	
-	private final GrowableBuffer payload = GrowableBuffer.allocate(128);
-	
 	@Override
-	public GrowableBuffer serialize(List<Cap> msg) {
-		payload.reset(false);
+	public void serialize(List<Cap> msg, GrowableBuffer dest) {
 		int length = 0;
 		for(Cap c : msg) {
 			length += c.getSerializedSize();
 		}
-		payload.reserve(length, false);
+		dest.reserve(length, false);
 		
-		payload.setLength(0);
+		dest.length(0);
 		for(Cap c : msg) {
-			c.serialize(payload);
+			c.serialize(dest);
 		}
-		return payload;
 	}
 
 }

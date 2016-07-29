@@ -2,8 +2,8 @@ package rook.core.io.service.raspberrypi.grovepi;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -26,7 +26,7 @@ public class GrovePiPlusDigitalInput implements IOInput {
 	
 	public GrovePiPlusDigitalInput(byte pin, RID id, GrovePiPlusHardware hw) {
 		this.pin = pin;
-		this.id = id;
+		this.id = id.immutable();
 		this.hw = hw;
 	}
 	
@@ -46,9 +46,16 @@ public class GrovePiPlusDigitalInput implements IOInput {
 
 	@Override
 	public IOValue read() throws IOException {
-		value.setID(id);
-		value.setValue(hw.digitalRead(pin));
-		return value;
+		boolean v;
+		synchronized (hw) {
+			v = hw.digitalRead(pin);
+		}
+		return value.setValue(v);
+	}
+	
+	@Override
+	public RID id() {
+		return id;
 	}
 
 	@Override

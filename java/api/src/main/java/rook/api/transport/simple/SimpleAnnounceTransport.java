@@ -1,13 +1,11 @@
 package rook.api.transport.simple;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import rook.api.RID;
-import rook.api.Router;
+import rook.api.collections.AtomicCollection;
+import rook.api.collections.ThreadSafeCollection;
 import rook.api.transport.AnnounceTransport;
+import rook.api.transport.consumer.AnnouncementConsumer;
+import rook.api.transport.consumer.ProbeConsumer;
 
 /**
  * Generic implementation of an {@link AnnounceTransport} that provides logic to
@@ -19,21 +17,37 @@ import rook.api.transport.AnnounceTransport;
  */
 public class SimpleAnnounceTransport implements AnnounceTransport {
 
-	private final Set<Consumer<RID>> announceListeners = Collections.synchronizedSet(new LinkedHashSet<>());
+	private final ThreadSafeCollection<AnnouncementConsumer> announceConsumers = new AtomicCollection<>();
+	private final ThreadSafeCollection<ProbeConsumer> probeConsumers = new AtomicCollection<>();
 
 	private final RID serviceId;
 	private final Publisher publisher;
+	private final boolean respondToProbes;
 
-	public SimpleAnnounceTransport(RID serviceId, Publisher publisher) {
+	public SimpleAnnounceTransport(RID serviceId, Publisher publisher, boolean respondToProbes) {
 		this.serviceId = serviceId;
 		this.publisher = publisher;
+		this.respondToProbes = respondToProbes;
 	}
-
+	
 	@Override
-	public void addAnnouncementConsumer(Consumer<RID> consumer) {
-		synchronized (announceListeners) {
-			announceListeners.add(consumer);
-		}
+	public void addAnnouncementConsumer(final AnnouncementConsumer consumer) {
+		announceConsumers.add(consumer, false);
+	}
+	
+	@Override
+	public void removeAnnouncementConsumer(final AnnouncementConsumer consumer) {
+		announceConsumers.removeAll(consumer);
+	}
+	
+	@Override
+	public void addProbeConsumer(ProbeConsumer consumer) {
+		probeConsumers.add(consumer, false);
+	}
+	
+	@Override
+	public void removeProbeConsumer(ProbeConsumer consumer) {
+		probeConsumers.removeAll(consumer);
 	}
 
 	@Override
@@ -42,7 +56,7 @@ public class SimpleAnnounceTransport implements AnnounceTransport {
 	}
 
 	@Override
-	public void incognito_announce(RID service) {
+	public void incognito_announce(final RID service) {
 		publisher.publish(MessageType.ANNOUNCE, service, null, null, null);
 	}
 
@@ -53,22 +67,21 @@ public class SimpleAnnounceTransport implements AnnounceTransport {
 	 * @param from
 	 *            The announced service
 	 */
-	public void handleAnnouncement(RID from) {
-		synchronized (announceListeners) {
-			for (Consumer<RID> l : announceListeners) {
-				l.accept(from);
-			}
-		}
+	public void handleAnnouncement(final RID from) {
+		announceConsumers.iterate(c -> c.onAnnouncement(from));
 	}
-
+	
 	/**
 	 * Handle an incoming probe event by responding with an ANNOUNCE event.
 	 * 
 	 * @param requestingService
 	 *            The service that sent the probe
 	 */
-	public void handleProbe(RID requestingService) {
-		publisher.publish(MessageType.ANNOUNCE, serviceId, requestingService, null, null);
+	public void handleProbe(RID from) {
+		if(respondToProbes) {
+			publisher.publish(MessageType.ANNOUNCE, serviceId, null, null, null);
+		}
+		probeConsumers.iterate(c -> c.onProbe(from));
 	}
 
 }

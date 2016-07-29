@@ -9,5 +9,30 @@ package rook.api.transport.simple;
  *
  */
 public enum MessageType {
-	UCAST_MESSAGE, BCAST_MESSAGE, BCAST_JOIN, BCAST_LEAVE, ANNOUNCE, PROBE;
+	UCAST_MESSAGE(0), BCAST_MESSAGE(1), BCAST_JOIN(2), BCAST_LEAVE(3), ANNOUNCE(4), PROBE(5);
+	private final byte value;
+	private MessageType(int value) {
+		this.value = (byte)value;
+	}
+	public byte getValue() {
+		return value;
+	}
+	public static MessageType fromValue(byte value) {
+		switch(value) {
+		case 0:
+			return UCAST_MESSAGE;
+		case 1:
+			return BCAST_MESSAGE;
+		case 2:
+			return BCAST_JOIN;
+		case 3:
+			return BCAST_LEAVE;
+		case 4:
+			return ANNOUNCE;
+		case 5:
+			return PROBE;
+		default:
+			return null;
+		}
+	}
 }

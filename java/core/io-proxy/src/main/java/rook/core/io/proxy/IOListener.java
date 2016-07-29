@@ -5,16 +5,17 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import rook.api.RID;
+import rook.api.transport.GrowableBuffer;
 import rook.api.transport.Transport;
-import rook.api.transport.event.BroadcastMessage;
+import rook.api.transport.consumer.BroadcastMessageConsumer;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.CapsDeserializer;
 import rook.core.io.proxy.message.IOValue;
-import rook.core.io.proxy.message.PooledValuesDeserializer;
 
 /**
  * Listens for {@link BroadcastMessage}s on the given {@link RID} group. These
@@ -26,26 +27,31 @@ import rook.core.io.proxy.message.PooledValuesDeserializer;
  */
 public abstract class IOListener {
 
-	private final Set<Consumer<IOValue>> consumers = new LinkedHashSet<>();
-	private final Set<Consumer<List<IOValue>>> batchConsumers = new LinkedHashSet<>();
-	private final Map<RID, Set<Consumer<IOValue>>> filteringConsumers = new HashMap<>();
+	private final Set<IOValueConsumer> consumers = new LinkedHashSet<>();
+	private final Set<IOValueBatchConsumer> batchConsumers = new LinkedHashSet<>();
+	private final Map<RID, Set<IOValueConsumer>> filteringConsumers = new HashMap<>();
 	private final Map<RID, IOValue> values = new HashMap<>();
 	private final Map<RID, RID> valueServiceIDs = new HashMap<>();
 	private final Transport transport;
 	private final RID group;
 	private final CapType type;
+	private AtomicBoolean joined = new AtomicBoolean(false);
 	
 	IOListener(Transport transport, RID group, CapType type) {
 		this.transport = transport;
 		this.group = group;
 		this.type = type;
-		transport.bcast().addMessageConsumer(group, this::handleValues, new PooledValuesDeserializer());
-		transport.bcast().addMessageConsumer(IOGroups.CAPS, this::handleCaps, new CapsDeserializer());
+		transport.bcast().addMessageConsumer(IOGroups.CAPS, null, capsListener, new CapsDeserializer());
+		transport.bcast().join(IOGroups.CAPS);
 	}
 	
 	public void stop() {
-		transport.bcast().removeMessageConsumer(group, this::handleValues);
-		transport.bcast().removeMessageConsumer(IOGroups.CAPS, this::handleCaps);
+		if(joined.get()) {
+			transport.bcast().removeMessageConsumer(valueListener);
+			transport.bcast().leave(group);
+		}
+		transport.bcast().removeMessageConsumer(capsListener);
+		transport.bcast().leave(IOGroups.CAPS);
 	}
 	
 	public void reset() {
@@ -53,55 +59,73 @@ public abstract class IOListener {
 		valueServiceIDs.clear();
 	}
 	
-	private void handleCaps(BroadcastMessage<List<Cap>> t) {
-		synchronized (valueServiceIDs) {
-			for(Cap c : t.getPayload()) {
-				if(c.getCapType() == type) {
-					valueServiceIDs.put(c.getId().unmodifiable(), t.getFrom().unmodifiable());
-				}
-			}
-		}
-	}
-	
-	private void handleValues(final BroadcastMessage<List<IOValue>> t) {
-		for(IOValue v : t.getPayload()) {
-			updateCache(v);
-			synchronized (consumers) {
-				for(Consumer<IOValue> c : consumers) {
-					c.accept(v);
-				}
-			}
-			synchronized (filteringConsumers) {
-				Set<Consumer<IOValue>> consumers = filteringConsumers.get(v.getID());
-				if(consumers != null) {
-					for(Consumer<IOValue> c : consumers) {
-						c.accept(v);
+	private final BroadcastMessageConsumer<List<Cap>> capsListener = new BroadcastMessageConsumer<List<Cap>>() {
+		@Override
+		public void onBroadcastMessage(RID from, RID group, List<Cap> caps) {
+			synchronized (valueServiceIDs) {
+				for(Cap c : caps) {
+					if(c.getCapType() == type) {
+						valueServiceIDs.put(c.getId().immutable(), from.immutable());
 					}
 				}
 			}
 		}
-		synchronized (batchConsumers) {
-			for(Consumer<List<IOValue>> c : batchConsumers) {
-				c.accept(t.getPayload());
+	};
+	
+	private final BroadcastMessageConsumer<GrowableBuffer> valueListener = new BroadcastMessageConsumer<GrowableBuffer>() {
+		private RID id = new RID();
+		private IOValue val = new IOValue();
+		@Override
+		public void onBroadcastMessage(RID from, RID group, GrowableBuffer valuesBuf) {
+			int off = 0;
+			while(off < valuesBuf.length()) {
+				// deserialize
+				id.setValue(valuesBuf.direct().getLong(off));
+				off+=8;
+				off+=val.deserialize(valuesBuf, off);
+				
+				// update cache
+				updateCache(id, val);
+				
+				// dispatch
+				// FIXME iterator garbage creation
+				synchronized (consumers) {
+					for(IOValueConsumer c : consumers) {
+						c.onValue(id, val);
+					}
+				}
+				synchronized (filteringConsumers) {
+					Set<IOValueConsumer> consumers = filteringConsumers.get(id);
+					if(consumers != null) {
+						for(IOValueConsumer c : consumers) {
+							c.onValue(id, val);
+						}
+					}
+				}
+				synchronized (batchConsumers) {
+					for(IOValueBatchConsumer c : batchConsumers) {
+						c.onValue(id, val, off == valuesBuf.length());
+					}
+				}
 			}
 		}
-	}
+	};
 
-	private void updateCache(IOValue src) {
+	private void updateCache(RID id, IOValue val) {
 		synchronized (values) {
-			IOValue dest = this.values.get(src.getID());
+			IOValue dest = this.values.get(id);
 			if(dest == null) {
 				dest = new IOValue();
-				this.values.put(src.getID(), dest);
+				this.values.put(id.immutable(), dest);
 			}
-			dest.getID().setValue(src.getID().toValue());
-			dest.getValue().copyFrom(src.getValue());
+			dest.copyFrom(val);
 		}
 	}
 
-	public void addFilteringConsumer(RID id, Consumer<IOValue> consumer) {
+	public void addFilteringConsumer(RID id, IOValueConsumer consumer) {
+		tryJoin();
 		synchronized (filteringConsumers) {
-			Set<Consumer<IOValue>> set = filteringConsumers.get(id);
+			Set<IOValueConsumer> set = filteringConsumers.get(id);
 			if (set == null) {
 				set = new LinkedHashSet<>();
 				filteringConsumers.put(id.copy(), set);
@@ -110,28 +134,30 @@ public abstract class IOListener {
 		}
 	}
 
-	public void removeFilteringConsumer(RID id, Consumer<IOValue> consumer) {
+	public void removeFilteringConsumer(RID id, IOValueConsumer consumer) {
 		synchronized (filteringConsumers) {
-			Set<Consumer<IOValue>> set = filteringConsumers.get(id);
+			Set<IOValueConsumer> set = filteringConsumers.get(id);
 			if (set != null) {
 				set.remove(consumer);
 			}
 		}
 	}
 	
-	public void addConsumer(Consumer<IOValue> consumer) {
+	public void addConsumer(IOValueConsumer consumer) {
+		tryJoin();
 		synchronized (consumers) {
 			consumers.add(consumer);
 		}
 	}
 
-	public void removeConsumer(Consumer<IOValue> consumer) {
+	public void removeConsumer(IOValueConsumer consumer) {
 		synchronized (consumers) {
 			consumers.remove(consumer);
 		}
 	}
 	
-	public void addBatchConsumer(Consumer<List<IOValue>> consumer) {
+	public void addBatchConsumer(IOValueBatchConsumer consumer) {
+		tryJoin();
 		synchronized (consumers) {
 			batchConsumers.add(consumer);
 		}
@@ -140,6 +166,13 @@ public abstract class IOListener {
 	public void removeBatchConsumer(Consumer<List<IOValue>> consumer) {
 		synchronized (consumers) {
 			batchConsumers.remove(consumer);
+		}
+	}
+	
+	private void tryJoin() {
+		if(joined.compareAndSet(false, true)) {
+			transport.bcast().addMessageConsumer(group, null, valueListener);
+			transport.bcast().join(group);
 		}
 	}
 

@@ -1,11 +1,9 @@
 package rook.api.transport;
 
-import java.util.function.Consumer;
-
 import rook.api.RID;
-import rook.api.transport.event.BroadcastJoin;
-import rook.api.transport.event.BroadcastLeave;
-import rook.api.transport.event.BroadcastMessage;
+import rook.api.transport.consumer.BroadcastJoinConsumer;
+import rook.api.transport.consumer.BroadcastLeaveConsumer;
+import rook.api.transport.consumer.BroadcastMessageConsumer;
 
 /**
  * Transport for broadcast messages. Broadcast messages are sent once and
@@ -17,75 +15,73 @@ import rook.api.transport.event.BroadcastMessage;
 public interface BroadcastTransport {
 
 	/**
-	 * Add a broadcast message consumer for the given group. The given group
-	 * will be joined if the transport is not already subscribed to it.
+	 * Add a broadcast message consumer. This will not join the given group. Use
+	 * the join(RID group) method to start receiving group messages.
 	 * 
-	 * @param group
-	 *            The group to join and listen to
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void addMessageConsumer(RID group, Consumer<BroadcastMessage<GrowableBuffer>> consumer);
-
-	/**
-	 * Add a deserializing broadcast message consumer for the given group. The
-	 * given group will be joined if the transport is not already subscribed to
-	 * it.
-	 * 
-	 * @param group
-	 *            The group to join and listen to
-	 * @param consumer
-	 *            The message consumer
-	 * @param deserializer
-	 *            The deserializer that converts a binary message into an object
-	 *            to be consumed
-	 */
-	<T> void addMessageConsumer(RID group, Consumer<BroadcastMessage<T>> consumer, Deserializer<T> deserializer);
+	void addMessageConsumer(BroadcastMessageConsumer<GrowableBuffer> consumer);
 
 	/**
 	 * Add a broadcast message consumer for the given group from a specified
-	 * service. The given group will be joined if the transport is not already
-	 * subscribed to it.
+	 * service. This will not join the given group. Use the join(RID group)
+	 * method to start receiving group messages.
 	 * 
 	 * @param group
-	 *            The group to join and listen to
+	 *            Optional. Filters callbacks that are not for the given group.
 	 * @param from
-	 *            The service to listen to. Only messages from this service ID
-	 *            on the given group will be passed to the consumer.
+	 *            Optional. Filters callbacks that are not from the given
+	 *            service id.
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void addMessageConsumer(RID group, RID from, Consumer<BroadcastMessage<GrowableBuffer>> consumer);
+	void addMessageConsumer(RID group, RID from, BroadcastMessageConsumer<GrowableBuffer> consumer);
 
 	/**
 	 * Add a deserializing broadcast message consumer for the given group from a
-	 * specified service. The given group will be joined if the transport is not
-	 * already subscribed to it.
+	 * specified service. This will not join the given group. Use the join(RID
+	 * group) method to start receiving group messages.
 	 * 
 	 * @param group
-	 *            The group to join and listen to
+	 *            Optional. Filters callbacks that are not for the given group.
 	 * @param from
-	 *            The service to listen to. Only messages from this service ID
-	 *            on the given group will be passed to the consumer.
+	 *            Optional. Filters callbacks that are not from the given
+	 *            service id.
 	 * @param consumer
 	 *            The message consumer
 	 * @param deserializer
 	 *            The deserializer that converts a binary message into an object
 	 *            to be consumed
 	 */
-	<T> void addMessageConsumer(RID group, RID from, Consumer<BroadcastMessage<T>> consumer,
+	<T> void addMessageConsumer(RID group, RID from, BroadcastMessageConsumer<T> consumer,
 			Deserializer<T> deserializer);
 
 	/**
-	 * Remove a consumer for the given group. If this was the only consumer for
-	 * the given group, the appropriate leave event will be published.
+	 * Remove a broadcast message consumer.
 	 * 
-	 * @param group
-	 *            The group to leave
 	 * @param consumer
 	 *            The consumer to remove
 	 */
-	<T> void removeMessageConsumer(RID group, Consumer<BroadcastMessage<T>> consumer);
+	<T> void removeMessageConsumer(BroadcastMessageConsumer<T> consumer);
+
+	/**
+	 * Join the given broadcast group. Callbacks will not receive messages until
+	 * a group is joined.
+	 * 
+	 * @param group
+	 *            The group to join
+	 */
+	void join(RID group);
+
+	/**
+	 * Leave the given broadcast group. This will stop the flow of messages to
+	 * callbacks for the given group.
+	 * 
+	 * @param group
+	 *            The group to leave
+	 */
+	void leave(RID group);
 
 	/**
 	 * Add a consumer to listen to JOIN events
@@ -93,7 +89,7 @@ public interface BroadcastTransport {
 	 * @param consumer
 	 *            The consumer
 	 */
-	void addJoinConsumer(Consumer<BroadcastJoin> consumer);
+	void addJoinConsumer(BroadcastJoinConsumer consumer);
 
 	/**
 	 * Remove a JOIN event consumer
@@ -101,7 +97,7 @@ public interface BroadcastTransport {
 	 * @param consumer
 	 *            The consumer
 	 */
-	void removeJoinConsumer(Consumer<BroadcastJoin> consumer);
+	void removeJoinConsumer(BroadcastJoinConsumer consumer);
 
 	/**
 	 * Add a consumer to listen to LEAVE events
@@ -109,7 +105,7 @@ public interface BroadcastTransport {
 	 * @param consumer
 	 *            The consumer
 	 */
-	void addLeaveConsumer(Consumer<BroadcastLeave> consumer);
+	void addLeaveConsumer(BroadcastLeaveConsumer consumer);
 
 	/**
 	 * Remove a LEAVE event consumer
@@ -117,7 +113,7 @@ public interface BroadcastTransport {
 	 * @param consumer
 	 *            The consumer
 	 */
-	void removeLeaveConsumer(Consumer<BroadcastLeave> consumer);
+	void removeLeaveConsumer(BroadcastLeaveConsumer consumer);
 
 	/**
 	 * Send a broadcast message for the given group
@@ -131,9 +127,9 @@ public interface BroadcastTransport {
 	void send(RID group, GrowableBuffer message);
 
 	/**
-	 * Serialize and send a broadcast message for the given group. This method is
-	 * intended to be used by services that are able to connect multiple routers
-	 * into a single environment.
+	 * Serialize and send a broadcast message for the given group. This method
+	 * is intended to be used by services that are able to connect multiple
+	 * routers into a single environment.
 	 * 
 	 * @param group
 	 *            The broadcast group. Any services that have joined this group
@@ -146,9 +142,9 @@ public interface BroadcastTransport {
 	<T> void send(RID group, T message, Serializer<T> serializer);
 
 	/**
-	 * Send a JOIN event on behalf of another service. This method is
-	 * intended to be used by services that are able to connect multiple routers
-	 * into a single environment.
+	 * Send a JOIN event on behalf of another service. This method is intended
+	 * to be used by services that are able to connect multiple routers into a
+	 * single environment.
 	 * 
 	 * @param fromService
 	 *            The "sending" service
@@ -158,9 +154,9 @@ public interface BroadcastTransport {
 	void incognito_join(RID fromService, RID group);
 
 	/**
-	 * Send a LEAVE event on behalf of another service. This method is
-	 * intended to be used by services that are able to connect multiple routers
-	 * into a single environment.
+	 * Send a LEAVE event on behalf of another service. This method is intended
+	 * to be used by services that are able to connect multiple routers into a
+	 * single environment.
 	 * 
 	 * @param fromService
 	 *            The "sending" service
@@ -184,9 +180,9 @@ public interface BroadcastTransport {
 	void incognito_send(RID fromService, RID group, GrowableBuffer message);
 
 	/**
-	 * Serialize and send a broadcast message on behalf of another service. This method is
-	 * intended to be used by services that are able to connect multiple routers
-	 * into a single environment.
+	 * Serialize and send a broadcast message on behalf of another service. This
+	 * method is intended to be used by services that are able to connect
+	 * multiple routers into a single environment.
 	 * 
 	 * @param fromService
 	 *            The "sending" service
@@ -198,22 +194,21 @@ public interface BroadcastTransport {
 	 *            The serializer will serialize the message
 	 */
 	<T> void incognito_send(RID fromService, RID group, T message, Serializer<T> serializer);
-	
-	
+
 	/**
-	 * Add a broadcast message consumer that will receive messages for any group 
+	 * Add a broadcast message consumer that will receive messages for any group
 	 * that <b>passes through the local router</b>.
 	 * 
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void incognito_addMessageConsumer(Consumer<BroadcastMessage<GrowableBuffer>> consumer);
-	
+	void incognito_addMessageConsumer(BroadcastMessageConsumer<GrowableBuffer> consumer);
+
 	/**
 	 * Remove an incognito message consumer
 	 * 
 	 * @param consumer
 	 *            The message consumer
 	 */
-	void incognito_removeMessageConsumer(Consumer<BroadcastMessage<GrowableBuffer>> consumer);
+	void incognito_removeMessageConsumer(BroadcastMessageConsumer<GrowableBuffer> consumer);
 }

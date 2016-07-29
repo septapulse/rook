@@ -1,8 +1,6 @@
 package rook.ui.websocket;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -30,13 +28,15 @@ public class ConfigWebSocket {
 	private final Gson gson = new Gson();
 	
 	public ConfigWebSocket(Environment environment) {
-		this.configManager = environment.configManager();
+		this.configManager = environment.getConfigManager();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@OnWebSocketMessage
     public void onText(Session session, String message) throws IOException
     {
+		if(logger.isDebugEnabled()) {
+			logger.debug("Received: " + message);
+		}
 		ConfigRequest req = gson.fromJson(message, ConfigRequest.class);
 		
 		ConfigResponse resp = new ConfigResponse();
@@ -46,47 +46,16 @@ public class ConfigWebSocket {
 		final String type = req.getType();
 		switch(type) {
 		case "get_configs":
-			resp.setCfgs(new ArrayList<String>(configManager.getConfigNames()));
-			break;
-		case "get_config":
-			if(req.getName() != null) {
-				resp.setCfg(gson.fromJson(configManager.getConfig(req.getName()), Map.class));
-			} else {
-				resp.setSuccess(false);
-			}
-			break;
-		case "set_config":
-			try {
-				if(req.getCfg() != null) {
-					configManager.setConfig(req.getName(), gson.toJson(req.getCfg()));
-				} else {
-					configManager.deleteConfig(req.getName());
-				}
-			} catch(IOException e) {
-				logger.error("Could not set config: " + req.getName(), e);
-				resp.setSuccess(false);
-			}
-			break;
-		case "get_services":
-			resp.setServices(new ArrayList<>(configManager.getServices()));
-			break;
-		case "get_template":
-			try {
-				if(req.getLibrary() != null && req.getName() != null) {
-					resp.setTemplate(configManager.getConfigTemplate(req.getLibrary(), req.getName()));
-				} else {
-					resp.setSuccess(false);
-				}
-			} catch (Exception e) {
-				logger.error("Could not load config template for " + req.getLibrary() + "/" + req.getName(), e);
-				resp.setSuccess(false);
-			}
+			resp.setCfgs(configManager.getServiceConfigs(req.getPkg(), req.getSid()));
 			break;
 		default:
 			resp.setSuccess(false);
 			break;
 		}
 		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Sending: " + gson.toJson(resp));
+		}
 		session.getRemote().sendString(gson.toJson(resp));
     }
 	

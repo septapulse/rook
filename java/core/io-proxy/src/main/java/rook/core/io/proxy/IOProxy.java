@@ -21,6 +21,7 @@ public class IOProxy {
 		outputs = new IOOutputs(transport);
 		inputs = new IOInputs(transport);
 		capsCache = new CapsCache(transport);
+		capsCache.requestCaps();
 	}
 	
 	/**

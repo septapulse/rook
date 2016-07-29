@@ -2,8 +2,8 @@ package rook.core.io.service.raspberrypi.gopigo;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -25,13 +25,11 @@ public class GoPiGoVoltage implements IOInput {
 			.setMaxValue(32)
 			.setIncrement(Double.MIN_VALUE);
 	private final IOValue value = new IOValue();
-	private final RID id;
 	private final GoPiGoHardware hw;
 	
 	public GoPiGoVoltage(RID id, GoPiGoHardware hw) {
-		this.id = id.unmodifiable();
 		this.hw = hw;
-		this.cap.setID(id);
+		this.cap.setID(id.immutable());
 	}
 	
 	@Override
@@ -46,7 +44,16 @@ public class GoPiGoVoltage implements IOInput {
 
 	@Override
 	public IOValue read() throws IOException {
-		return value.setID(id).setValue(hw.readVoltage());
+		double v;
+		synchronized (hw) {
+			v = hw.readVoltage();
+		}
+		return value.setValue(v);
+	}
+	
+	@Override
+	public RID id() {
+		return cap.getId();
 	}
 
 	@Override

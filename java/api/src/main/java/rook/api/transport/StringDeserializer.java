@@ -10,9 +10,9 @@ public class StringDeserializer implements Deserializer<String> {
 
 	@Override
 	public String deserialize(GrowableBuffer msg) {
-		if (msg.getLength() == 0) {
+		if (msg.length() == 0) {
 			return "";
 		}
-		return new String(msg.getBytes(), 0, msg.getLength());
+		return new String(msg.bytes(), 0, msg.length());
 	}
 }

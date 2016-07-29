@@ -1,5 +1,6 @@
 package rook.api;
 
+import rook.api.exception.InitException;
 import rook.api.transport.Transport;
 
 /**
@@ -12,7 +13,7 @@ import rook.api.transport.Transport;
 public interface Service {
 	/**
 	 * Sets the underlying {@link Transport} to be used. Called once before
-	 * {@link #init()}
+	 * {@link #init()}. Transport setup/subscription is allowed in this method.
 	 * 
 	 * @param transport
 	 *            The transport

@@ -24,12 +24,10 @@ public class StringSerializer implements Serializer<String> {
 	}
 
 	@Override
-	public GrowableBuffer serialize(String msg) {
-		buf.reset(false);
-		buf.setLength(msg.length());
+	public void serialize(String msg, GrowableBuffer dest) {
+		dest.length(msg.length());
 		for (int i = 0; i < msg.length(); i++) {
-			buf.getBytes()[i] = (byte) msg.charAt(i);
+			buf.bytes()[i] = (byte) msg.charAt(i);
 		}
-		return buf;
 	}
 }

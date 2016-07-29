@@ -2,8 +2,8 @@ package rook.core.io.service.raspberrypi.gopigo;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -25,13 +25,11 @@ public abstract class GoPiGoEncoder implements IOInput {
 			.setMaxValue(65535)
 			.setIncrement(1);
 	private final IOValue value = new IOValue();
-	private final RID id;
 	private int lastValue = 0;
 	private long lastTime = 0;
 	
 	public GoPiGoEncoder(RID id) {
-		this.id = id.unmodifiable();
-		this.cap.setID(id);
+		this.cap.setID(id.immutable());
 	}
 	
 	@Override
@@ -71,11 +69,16 @@ public abstract class GoPiGoEncoder implements IOInput {
 		}
 		lastValue = newValue;
 		lastTime = newTime;
-		return value.setID(id).setValue(readsPerSecond);
+		return value.setValue(readsPerSecond);
 	}
 	
 	protected abstract int readValue() throws IOException;
 
+	@Override
+	public RID id() {
+		return cap.getId();
+	}
+	
 	@Override
 	public final Cap cap() {
 		return cap;

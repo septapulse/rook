@@ -25,14 +25,12 @@ public class GpioDigitalInput implements IOInput {
 
 	private final IOValue value = new IOValue();
 	private final Cap cap;
-	private final RID id;
 	private final Pin pin;
 	private GpioPinDigitalInput input;
 	
 	public GpioDigitalInput(String pin, RID id) {
 		this.pin = RaspiPin.getPinByName(pin);
-		this.id = id;
-		this.cap = new Cap().setCapType(CapType.INPUT).setDataType(DataType.BOOLEAN);
+		this.cap = new Cap().setCapType(CapType.INPUT).setDataType(DataType.BOOLEAN).setID(id.immutable());
 	}
 	
 	@Override
@@ -42,9 +40,13 @@ public class GpioDigitalInput implements IOInput {
 
 	@Override
 	public IOValue read() throws IOException {
-		value.setID(id);
 		value.setValue(input.getState() == PinState.HIGH ? true : false);
 		return value;
+	}
+	
+	@Override
+	public RID id() {
+		return cap.getId();
 	}
 
 	@Override

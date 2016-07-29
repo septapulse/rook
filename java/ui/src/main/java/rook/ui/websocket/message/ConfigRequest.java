@@ -1,7 +1,5 @@
 package rook.ui.websocket.message;
 
-import java.util.Map;
-
 /**
  * Decoded message
  * 
@@ -11,9 +9,11 @@ import java.util.Map;
 public class ConfigRequest {
 	private String t;
 	private Long id;
-	private String name;
-	private String library;
-	private Map<String, Object> cfg;
+	private String pkg;
+	private String sid;
+//	private String name;
+//	private String library;
+//	private Map<String, Object> cfg;
 	
 	public String getType() {
 		return t;
@@ -23,15 +23,11 @@ public class ConfigRequest {
 		return id;
 	}
 
-	public String getName() {
-		return name;
+	public String getPkg() {
+		return pkg;
 	}
-	
-	public String getLibrary() {
-		return library;
-	}
-	
-	public Map<String, Object> getCfg() {
-		return cfg;
+
+	public String getSid() {
+		return sid;
 	}
 }

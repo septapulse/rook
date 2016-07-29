@@ -1,6 +1,6 @@
 package rook.core.io.service.raspberrypi;
 
-import rook.api.InitException;
+import rook.api.exception.InitException;
 import rook.core.io.service.IOManager;
 import rook.core.io.service.IOService;
 

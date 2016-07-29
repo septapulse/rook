@@ -1,23 +1,17 @@
 package rook.core.io.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rook.api.InitException;
+import rook.api.RID;
 import rook.api.Service;
+import rook.api.exception.InitException;
 import rook.api.transport.GrowableBuffer;
 import rook.api.transport.Transport;
-import rook.api.transport.event.BroadcastMessage;
-import rook.api.transport.event.UnicastMessage;
 import rook.core.io.proxy.IOGroups;
 import rook.core.io.proxy.message.IOValue;
-import rook.core.io.proxy.message.IOValuesSerializer;
-import rook.core.io.proxy.message.PooledValuesDeserializer;
 
 public abstract class IOService implements Service {
 
@@ -28,11 +22,11 @@ public abstract class IOService implements Service {
 	private final InputBroadcastLoop inputBcastLoop = new InputBroadcastLoop();
 	private final long bcastInterval;
 	private final long reconnectInterval;
-	private final List<IOValue> inputValues = new ArrayList<>();
-	private int numInputValues = 0;
-	private final IOValuesSerializer valuesSerializer = new IOValuesSerializer();
-	private final PooledValuesDeserializer valuesDeserializer = new PooledValuesDeserializer();
 	private final CapsSerializer capsSerializer = new CapsSerializer();
+	private final GrowableBuffer reusedCapsMessage = GrowableBuffer.allocate(128);
+	private final GrowableBuffer reusedInputMessage = GrowableBuffer.allocate(128);
+	private final RID reusedWriteOutputId = new RID();
+	private final IOValue reusedWriteOutputVal = new IOValue(0);
 	protected final IOManager ioManager = new IOManager();
 	
 	protected Transport transport;
@@ -58,8 +52,9 @@ public abstract class IOService implements Service {
 		onInit();
 		ioManager.forEachInput(this::initializeInput);
 		ioManager.forEachOutput(this::initializeOutput);
-		transport.ucast().addMessageConsumer(writeOutputConsumer);
-		transport.bcast().addMessageConsumer(IOGroups.PROBE, probeConsumer);
+		transport.ucast().addMessageConsumer(this::handleOutput);
+		transport.bcast().addMessageConsumer(IOGroups.PROBE, null, this::handleProbe);
+		transport.bcast().join(IOGroups.PROBE);
 		sendCapsMessage();
 		new Thread(inputBcastLoop, "IOService Broadcast Loop").start();
 	}
@@ -80,19 +75,17 @@ public abstract class IOService implements Service {
 		}
 	}
 	
-	private final Consumer<BroadcastMessage<GrowableBuffer>> probeConsumer = new Consumer<BroadcastMessage<GrowableBuffer>>() {
-		@Override
-		public void accept(BroadcastMessage<GrowableBuffer> t) {
-			sendCapsMessage();
-		}
-	};
+	private void handleProbe(RID from, RID group, GrowableBuffer msg) {
+		sendCapsMessage();
+	}
 	
 	private void sendCapsMessage() {
 		transport.bcast().send(IOGroups.CAPS, getCapsMessage());
 	}
 	
 	protected GrowableBuffer getCapsMessage() {
-		return capsSerializer.serialize(ioManager.getCaps());
+		capsSerializer.serialize(ioManager.getCaps(), reusedCapsMessage);
+		return reusedCapsMessage;
 	}
 	
 	@Override
@@ -106,31 +99,35 @@ public abstract class IOService implements Service {
 	
 	public abstract void onShutdown();
 	
-	private final Consumer<UnicastMessage<GrowableBuffer>> writeOutputConsumer = new Consumer<UnicastMessage<GrowableBuffer>>() {
-		@Override
-		public void accept(UnicastMessage<GrowableBuffer> msg) {
-			try {
-				writeOutputs(msg.getPayload());
-			} catch (IOException e) {
-				logger.error("Failed to write to device: " + msg.getPayload(), e);
-			}
+	public void handleOutput(RID from, RID to, GrowableBuffer msg) {
+		try {
+			writeOutputs(msg);
+		} catch (IOException e) {
+			logger.error("Failed to write to device: " + msg, e);
 		}
-	};
+	}
 	
 	protected void writeOutputs(GrowableBuffer message) throws IOException {
+		// alert the world of the change
+		transport.bcast().send(IOGroups.OUTPUT, message);
 		onWriteStart();
-		List<IOValue> outputs = valuesDeserializer.deserialize(message);
-		writeOutputs(outputs);
+		// step through each output
+		int off = 0;
+		while(off < message.length()) {
+			// deserialize
+			reusedWriteOutputId.setValue(message.direct().getLong(off));
+			off+=8;
+			off+=reusedWriteOutputVal.deserialize(message, off);
+			// handle single value
+			writeOutput(reusedWriteOutputId, reusedWriteOutputVal);
+		}
 		onWriteEnd();
 	}
 	
-	protected void writeOutputs(List<IOValue> values) throws IOException {
-		transport.bcast().send(IOGroups.OUTPUT, values, valuesSerializer);
-		for(IOValue value : values) {
-			IOOutput output = ioManager.getOutput(value.getID());
-			if(output != null) {
-				output.write(value);
-			}
+	protected void writeOutput(RID id, IOValue value) throws IOException {
+		IOOutput output = ioManager.getOutput(id);
+		if(output != null) {
+			output.write(value);
 		}
 	}
 	
@@ -155,13 +152,16 @@ public abstract class IOService implements Service {
 			try {
 				while (run) {
 					try {
+						long start = System.currentTimeMillis();
 						GrowableBuffer msg = readInputMessage();
 						transport.bcast().send(IOGroups.INPUT, msg);
-						// FIXME measure time spent measuring
-						Thread.sleep(bcastInterval);
-					} catch (IOException e) {
+						long bcastTime = System.currentTimeMillis()-start;
+						long sleep = bcastInterval-bcastTime;
+						if(sleep > 0)
+							Thread.sleep(sleep);
+					} catch (Throwable t) {
 						logger.error("Failed to read from device. Waiting " + reconnectInterval
-								+ " milliseconds before trying again.", e);
+								+ " milliseconds before trying again.", t);
 						Thread.sleep(reconnectInterval);
 					}
 				}
@@ -174,9 +174,9 @@ public abstract class IOService implements Service {
 	
 	protected GrowableBuffer readInputMessage() throws IOException {
 		onReadStart();
-		GrowableBuffer buf = valuesSerializer.serialize(readInputs());
+		readInputs(reusedInputMessage);
 		onReadEnd();
-		return buf;
+		return reusedInputMessage;
 	}
 	
 	protected void onReadStart() {
@@ -187,22 +187,26 @@ public abstract class IOService implements Service {
 		// Can be used by implementing class to trigger a batch-read
 	}
 	
-	public List<IOValue> readInputs() {
-		numInputValues = 0;
+	public void readInputs(GrowableBuffer dest) {
 		ioManager.forEachInput(this::readInput);
-		return inputValues;
 	}
 	
 	private void readInput(IOInput input) {
-		if(numInputValues == inputValues.size()) {
-			inputValues.add(new IOValue());
-		}
 		try {
-			inputValues.get(numInputValues).copyFrom(input.read());
+			RID id = input.id();
+			IOValue val = input.read();
+			reusedInputMessage.reserve(reusedInputMessage.length()+8+val.getSerializedLength(), true);
+			
+			// serialize ID
+			reusedInputMessage.direct().putLong(reusedInputMessage.length(), id.toValue());
+			reusedInputMessage.length(reusedInputMessage.length()+8);
+			
+			// serialize value
+			val.serialize(reusedInputMessage);
+			
 			if(logger.isTraceEnabled()) {
-				logger.trace("Input " + inputValues.get(numInputValues));
+				logger.trace("Input " + id + " = " + val);
 			}
-			numInputValues++;
 		} catch (IOException e) {
 			logger.error("Could not read IOValue", e);
 		}

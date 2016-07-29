@@ -14,9 +14,9 @@ public class IOGroups {
 		
 	}
 	
-	public static RID INPUT = RID.create("IO.INPUT").unmodifiable();
-	public static RID OUTPUT = RID.create("IO.OUTPUT").unmodifiable();
-	public static RID PROBE = RID.create("IO.PROBE").unmodifiable();
-	public static RID CAPS = RID.create("IO.CAPS").unmodifiable();
+	public static RID INPUT = RID.create("IO.INPUT").immutable();
+	public static RID OUTPUT = RID.create("IO.OUTPUT").immutable();
+	public static RID PROBE = RID.create("IO.PROBE").immutable();
+	public static RID CAPS = RID.create("IO.CAPS").immutable();
 	
 }

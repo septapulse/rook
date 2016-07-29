@@ -6,6 +6,8 @@ import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 
+import rook.core.io.service.raspberrypi.util.ThrottledI2CDevice;
+
 /**
  * Hardware interface to the GrovePi+
  * 
@@ -28,7 +30,7 @@ public class GrovePiPlusHardware {
 	public static final byte DEFAULT_BUS = I2CBus.BUS_1;
 	public static final byte DEFAULT_ADDRESS = 0x04;
 
-	private final I2CDevice device;
+	private final ThrottledI2CDevice device;
 	private final byte[] buffer = new byte[4];
 
 	public GrovePiPlusHardware() throws IOException {
@@ -36,10 +38,14 @@ public class GrovePiPlusHardware {
 	}
 	
 	public GrovePiPlusHardware(I2CDevice device) {
+		this(new ThrottledI2CDevice(device, 20, true));
+	}
+	
+	public GrovePiPlusHardware(ThrottledI2CDevice device) {
 		this.device = device;
 	}
 	
-	public I2CDevice getDevice() {
+	public ThrottledI2CDevice getDevice() {
 		return device;
 	}
 

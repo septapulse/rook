@@ -1,8 +1,8 @@
 package rook.api.transport;
 
-import java.util.function.Consumer;
-
 import rook.api.RID;
+import rook.api.transport.consumer.AnnouncementConsumer;
+import rook.api.transport.consumer.ProbeConsumer;
 
 /**
  * Transport for service announcement and probes
@@ -17,10 +17,33 @@ public interface AnnounceTransport {
 	 * 
 	 * @param consumer
 	 */
-	void addAnnouncementConsumer(Consumer<RID> consumer);
+	void addAnnouncementConsumer(AnnouncementConsumer consumer);
 
 	/**
-	 * Send a probe for all service's that are currently online.
+	 * Remove a consumer for announcement messages
+	 * 
+	 * @param consumer
+	 */
+	void removeAnnouncementConsumer(AnnouncementConsumer consumer);
+
+	/**
+	 * Add a consumer for probes
+	 * 
+	 * @param consumer
+	 */
+	void addProbeConsumer(ProbeConsumer consumer);
+	
+	/**
+	 * Remove a consumer for probes
+	 * 
+	 * @param consumer
+	 */
+	void removeProbeConsumer(ProbeConsumer consumer);
+	
+	/**
+	 * Send a probe for all service's that are currently online. Services will
+	 * respond with an announcement followed by any Broadcast Groups they are
+	 * currently joined to.
 	 */
 	void probe();
 

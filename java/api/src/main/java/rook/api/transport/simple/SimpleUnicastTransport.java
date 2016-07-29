@@ -1,22 +1,17 @@
 package rook.api.transport.simple;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
 import rook.api.RID;
-import rook.api.Router;
-import rook.api.transport.Deserializer;
+import rook.api.collections.AtomicCollection;
+import rook.api.collections.ThreadSafeCollection;
 import rook.api.transport.GrowableBuffer;
+import rook.api.transport.Deserializer;
 import rook.api.transport.Serializer;
 import rook.api.transport.UnicastTransport;
-import rook.api.transport.consumer.CopyingUnicastMessageConsumer;
-import rook.api.transport.consumer.DeserializingUnicastMessageConsumer;
+import rook.api.transport.consumer.DeserializingFilteringUnicastMessageConsumer;
 import rook.api.transport.consumer.FilteringUnicastMessageConsumer;
-import rook.api.transport.event.UnicastMessage;
+import rook.api.transport.consumer.PassthroughUnicastMessageConsumer;
+import rook.api.transport.consumer.ProxyUnicastMessageConsumer;
+import rook.api.transport.consumer.UnicastMessageConsumer;
 
 /**
  * Generic implementation of a {@link UnicastMessage} that provides logic to
@@ -28,57 +23,43 @@ import rook.api.transport.event.UnicastMessage;
  */
 public class SimpleUnicastTransport implements UnicastTransport {
 
-	private final Map<Consumer<?>, Consumer<UnicastMessage<GrowableBuffer>>> messageConsumers = Collections
-			.synchronizedMap(new LinkedHashMap<>());
-	private final Set<Consumer<UnicastMessage<GrowableBuffer>>> ingognitoMessageConsumers = Collections
-			.synchronizedSet(new LinkedHashSet<>());
-	private final UnicastMessage<GrowableBuffer> ucastMsg = new UnicastMessage<>();
-
+	private final ThreadSafeCollection<ProxyUnicastMessageConsumer<GrowableBuffer>> messageConsumers = new AtomicCollection<>();
+	private final ThreadSafeCollection<ProxyUnicastMessageConsumer<GrowableBuffer>> incognitoMessageConsumers = new AtomicCollection<>();
 	private final RID serviceId;
 	private final Publisher publisher;
-	private final int defaultMessageCapacity;
 
 	public SimpleUnicastTransport(RID serviceId, Publisher publisher, int defaultMessageCapacity) {
 		this.serviceId = serviceId;
 		this.publisher = publisher;
-		this.defaultMessageCapacity = defaultMessageCapacity;
 	}
 
 	@Override
-	public void addMessageConsumer(Consumer<UnicastMessage<GrowableBuffer>> consumer) {
-		synchronized (messageConsumers) {
-			messageConsumers.put(consumer, new CopyingUnicastMessageConsumer(defaultMessageCapacity, consumer));
-		}
+	public void addMessageConsumer(UnicastMessageConsumer<GrowableBuffer> consumer) {
+		messageConsumers.add( 
+				new PassthroughUnicastMessageConsumer(consumer), false);
 	}
 
 	@Override
-	public <T> void addMessageConsumer(Consumer<UnicastMessage<T>> consumer, Deserializer<T> deserializer) {
-		synchronized (messageConsumers) {
-			messageConsumers.put(consumer, new DeserializingUnicastMessageConsumer<>(consumer, deserializer));
-		}
+	public <T> void addMessageConsumer(UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer) {
+		messageConsumers.add(
+				new DeserializingFilteringUnicastMessageConsumer<>(null, consumer, deserializer), false);
 	}
 
 	@Override
-	public void addMessageConsumer(RID from, Consumer<UnicastMessage<GrowableBuffer>> consumer) {
-		synchronized (messageConsumers) {
-			messageConsumers.put(consumer, new FilteringUnicastMessageConsumer(from,
-					new CopyingUnicastMessageConsumer(defaultMessageCapacity, consumer)));
-		}
+	public void addMessageConsumer(RID from, UnicastMessageConsumer<GrowableBuffer> consumer) {
+			messageConsumers.add(
+					new FilteringUnicastMessageConsumer(from, consumer), false);
 	}
 
 	@Override
-	public <T> void addMessageConsumer(RID from, Consumer<UnicastMessage<T>> consumer, Deserializer<T> deserializer) {
-		synchronized (messageConsumers) {
-			messageConsumers.put(consumer, new FilteringUnicastMessageConsumer(from,
-					new DeserializingUnicastMessageConsumer<>(consumer, deserializer)));
-		}
+	public <T> void addMessageConsumer(RID from, UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer) {
+		messageConsumers.add(
+				new DeserializingFilteringUnicastMessageConsumer<>(from, consumer, deserializer), false);
 	}
 
 	@Override
-	public <T> void removeMessageConsumer(Consumer<UnicastMessage<T>> consumer) {
-		synchronized (messageConsumers) {
-			messageConsumers.remove(consumer);
-		}
+	public <T> void removeMessageConsumer(UnicastMessageConsumer<T> consumer) {
+		messageConsumers.removeIf(c -> c.getBaseConsumer() == consumer);
 	}
 
 	@Override
@@ -88,28 +69,26 @@ public class SimpleUnicastTransport implements UnicastTransport {
 
 	@Override
 	public <T> void send(RID to, T msg, Serializer<T> serializer) {
-		send(to, serializer.serialize(msg));
+		GrowableBuffer buf = GrowableBuffer.allocate(0); // FIXME reuse
+		serializer.serialize(msg, buf);
+		send(to, buf);
 	}
 
 	@Override
-	public void incognito_addMessageConsumer(Consumer<UnicastMessage<GrowableBuffer>> consumer) {
-		synchronized (ingognitoMessageConsumers) {
-			ingognitoMessageConsumers.add(consumer);
-		}
+	public void incognito_addMessageConsumer(UnicastMessageConsumer<GrowableBuffer> consumer) {
+		incognitoMessageConsumers.add(
+				new PassthroughUnicastMessageConsumer(consumer), false);
 	}
 
 	@Override
-	public <T> void incognito_addMessageConsumer(Consumer<UnicastMessage<T>> consumer, Deserializer<T> deserializer) {
-		synchronized (ingognitoMessageConsumers) {
-			ingognitoMessageConsumers.add(new DeserializingUnicastMessageConsumer<>(consumer, deserializer));
-		}
+	public <T> void incognito_addMessageConsumer(UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer) {
+		incognitoMessageConsumers.add(
+				new DeserializingFilteringUnicastMessageConsumer<>(null, consumer, deserializer), false);
 	}
 
 	@Override
-	public <T> void incognito_removeMessageConsumer(Consumer<UnicastMessage<T>> consumer) {
-		synchronized (ingognitoMessageConsumers) {
-			ingognitoMessageConsumers.remove(consumer);
-		}
+	public <T> void incognito_removeMessageConsumer(UnicastMessageConsumer<T> consumer) {
+		incognitoMessageConsumers.removeIf(c -> c.getBaseConsumer() == consumer);
 	}
 
 	@Override
@@ -119,7 +98,9 @@ public class SimpleUnicastTransport implements UnicastTransport {
 
 	@Override
 	public <T> void incognito_send(RID from, RID to, T msg, Serializer<T> serializer) {
-		incognito_send(from, to, serializer.serialize(msg));
+		GrowableBuffer buf = GrowableBuffer.allocate(0); // FIXME reuse
+		serializer.serialize(msg, buf);
+		incognito_send(from, to, buf);
 	}
 
 	/**
@@ -134,27 +115,17 @@ public class SimpleUnicastTransport implements UnicastTransport {
 	 *            The payload
 	 */
 	public void handleUcastMessage(RID from, RID to, GrowableBuffer msg) {
-		synchronized (messageConsumers) {
-			if (messageConsumers.size() > 0) {
-				if (to.equals(serviceId)) {
-					ucastMsg.getFrom().setValue(from.toValue());
-					ucastMsg.getTo().setValue(to.toValue());
-					ucastMsg.setPayload(msg);
-					for (Consumer<UnicastMessage<GrowableBuffer>> l : messageConsumers.values()) {
-						l.accept(ucastMsg);
-					}
-				}
+		if (messageConsumers.size() > 0) {
+			if (to.equals(serviceId)) {
+				messageConsumers.iterate(c -> {
+					c.onUnicastMessage(from, to, msg);
+				});
 			}
 		}
-		synchronized (ingognitoMessageConsumers) {
-			if (ingognitoMessageConsumers.size() > 0) {
-				ucastMsg.getFrom().setValue(from.toValue());
-				ucastMsg.getTo().setValue(to.toValue());
-				ucastMsg.setPayload(msg);
-				for (Consumer<UnicastMessage<GrowableBuffer>> l : ingognitoMessageConsumers) {
-					l.accept(ucastMsg);
-				}
-			}
+		if (incognitoMessageConsumers.size() > 0) {
+			incognitoMessageConsumers.iterate(c -> {
+				c.onUnicastMessage(from, to, msg);
+			});
 		}
 	}
 }

@@ -16,15 +16,16 @@ import rook.ui.environment.Environment;
 public class RookWebSocketCreator implements WebSocketCreator {
 
 	private final IOWebSocket io;
-	private final EnvironmentWebSocket env;
+	private final ServicesWebSocket services;
+	private final RuntimeWebSocket runtime;
 	private final ConfigWebSocket cfg;
-	private final ScriptWebSocket script;
+//	private final ScriptWebSocket script;
 	
 	public RookWebSocketCreator(Environment environment) {
 		io = new IOWebSocket(environment);
-		env = new EnvironmentWebSocket(environment);
+		services = new ServicesWebSocket(environment);
+		runtime = new RuntimeWebSocket(environment);
 		cfg = new ConfigWebSocket(environment);
-		script = new ScriptWebSocket(environment);
 	}
 	
 	@Override
@@ -34,15 +35,15 @@ public class RookWebSocketCreator implements WebSocketCreator {
 			case "io":
 				resp.setAcceptedSubProtocol(protocol);
 				return io;
-			case "env":
+			case "services":
 				resp.setAcceptedSubProtocol(protocol);
-				return env;
+				return services;
+			case "runtime":
+				resp.setAcceptedSubProtocol(protocol);
+				return runtime;
 			case "cfg":
 				resp.setAcceptedSubProtocol(protocol);
 				return cfg;
-			case "script":
-				resp.setAcceptedSubProtocol(protocol);
-				return script;
 			}
 		}
 		return null;

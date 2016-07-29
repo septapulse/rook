@@ -1,0 +1,16 @@
+{
+  "goPiGo": { 
+    "bus": 1,
+    "address": 8,
+    "encoderLeft": "SPEED_LEFT",
+    "encoderRight": "SPEED_RIGHT",
+    "ledLeft": "LED_LEFT",
+    "ledRight": "LED_RIGHT",
+    "motorLeft": "MOTOR_LEFT",
+    "motorRight": "MOTOR_RIGHT",
+    "servoPosition": "SERVO",
+    "servoEnabled": "SERVO_POWER",
+    "ultrasonicDistance": "ULTRASONIC",
+    "voltage": "VOLTAGE"
+  }
+}

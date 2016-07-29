@@ -1,7 +1,7 @@
 package rook.core.io.service.raspberrypi.gpio;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.IOValue;
 import rook.core.io.service.IOManager;
 import rook.core.io.service.raspberrypi.RaspberryPiDevice;

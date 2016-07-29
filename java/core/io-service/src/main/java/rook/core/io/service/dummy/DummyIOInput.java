@@ -2,8 +2,8 @@ package rook.core.io.service.dummy;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -26,7 +26,7 @@ public class DummyIOInput implements IOInput {
 	private double increment = 1;
 	
 	public DummyIOInput(RID id, DataType dataType) {
-		this.id = id.copy();
+		this.id = id.immutable();
 		this.dataType = dataType;
 		this.cap = new Cap()
 				.setCapType(CapType.INPUT)
@@ -60,8 +60,6 @@ public class DummyIOInput implements IOInput {
 
 	@Override
 	public IOValue read() throws IOException {
-		value.getID().setValue(id.toValue());
-		
 		if(dataType == DataType.BOOLEAN) {
 			if(val == 0) {
 				val = 1;
@@ -86,6 +84,11 @@ public class DummyIOInput implements IOInput {
 		}
 		
 		return value;
+	}
+	
+	@Override
+	public RID id() {
+		return id;
 	}
 
 	@Override

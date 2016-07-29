@@ -2,8 +2,8 @@ package rook.core.io.service.raspberrypi.grovepi;
 
 import java.io.IOException;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -25,7 +25,7 @@ public class GrovePiPlusAnalogInput implements IOInput {
 	
 	public GrovePiPlusAnalogInput(byte pin, RID id, GrovePiPlusHardware hw) {
 		this.pin = pin;
-		this.id = id;
+		this.id = id.immutable();
 		this.hw = hw;
 	}
 	
@@ -41,9 +41,16 @@ public class GrovePiPlusAnalogInput implements IOInput {
 
 	@Override
 	public IOValue read() throws IOException {
-		value.setID(id);
-		value.setValue(hw.analogRead(pin));
-		return value;
+		int v;
+		synchronized (hw) {
+			v = hw.analogRead(pin);
+		}
+		return value.setValue(v);
+	}
+	
+	@Override
+	public RID id() {
+		return id;
 	}
 
 	@Override

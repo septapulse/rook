@@ -6,7 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rook.api.InitException;
+import rook.api.config.Configurable;
+import rook.api.exception.InitException;
 import rook.core.io.service.IOService;
 import rook.core.io.service.raspberrypi.gopigo.GoPiGo;
 import rook.core.io.service.raspberrypi.gpio.Gpio;
@@ -25,6 +26,7 @@ public class RaspberryPi extends IOService {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final List<RaspberryPiDevice> devices = new ArrayList<>();
 	
+	@Configurable
 	public RaspberryPi(RaspberryPiConfig config) throws InitException {
 		super(DEFAULT_BROADCAST_INTERVAL, DEFAULT_RECONNECT_INTERVAL);
 		if(config.goPiGo != null)

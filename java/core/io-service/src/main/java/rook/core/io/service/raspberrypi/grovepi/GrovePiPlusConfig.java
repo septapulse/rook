@@ -34,6 +34,8 @@ public class GrovePiPlusConfig {
 	private DigitalPin D7;
 	@Configurable(comment = "Pin D8")
 	private DigitalPin D8;
+	@ConfigurableInteger(comment = "I2C Throttle Interval Millis", defaultValue = "20")
+	private long i2cThrottleIntervalMillis = 20;
 
 	public Byte getBus() {
 		return bus;
@@ -82,12 +84,16 @@ public class GrovePiPlusConfig {
 	public DigitalPin getD8() {
 		return D8;
 	}
+	
+	public long getI2cThrottleIntervalMillis() {
+		return i2cThrottleIntervalMillis;
+	}
 
 	@Override
 	public String toString() {
 		return "GrovePiPlusConfig [bus=" + bus + ", address=" + address + ", A0=" + A0 + ", A1=" + A1 + ", A2=" + A2
 				+ ", D2=" + D2 + ", D3=" + D3 + ", D4=" + D4 + ", D5=" + D5 + ", D6=" + D6 + ", D7=" + D7 + ", D8=" + D8
-				+ "]";
+				+ ", i2cThrottleIntervalMillis=" + i2cThrottleIntervalMillis + "]";
 	}
 	
 	public static class AnalogPin {

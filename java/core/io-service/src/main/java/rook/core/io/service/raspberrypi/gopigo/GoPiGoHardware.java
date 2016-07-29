@@ -6,6 +6,8 @@ import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 
+import rook.core.io.service.raspberrypi.util.ThrottledI2CDevice;
+
 /**
  * Hardware interface to a GoPiGo
  * 
@@ -38,10 +40,9 @@ public class GoPiGoHardware {
 	public static final byte DEFAULT_BUS = I2CBus.BUS_1;
 	public static final byte DEFAULT_ADDRESS = 0x08;
 
-	private final I2CDevice device;
+	private final ThrottledI2CDevice device;
 	private final byte[] buffer = new byte[4];
 	
-	private long lastThrottleTime = 0;
 	private int ultrasonicPin = 15;	
 	
 	public GoPiGoHardware() throws IOException {
@@ -49,10 +50,14 @@ public class GoPiGoHardware {
 	}
 
 	public GoPiGoHardware(I2CDevice device) throws IOException {
+		this(new ThrottledI2CDevice(device, 20, true));
+	}
+	
+	public GoPiGoHardware(ThrottledI2CDevice device) throws IOException {
 		this.device = device;
 	}
 
-	public I2CDevice getDevice() {
+	public ThrottledI2CDevice getDevice() {
 		return device;
 	}
 
@@ -156,36 +161,19 @@ public class GoPiGoHardware {
 		return ((high & 0xFF) << 8) | (low & 0xFF);
 	}
 
-	private synchronized void writeI2C(byte b1, byte b2, byte b3, byte b4) throws IOException {
+	private void writeI2C(byte b1, byte b2, byte b3, byte b4) throws IOException {
 		buffer[0] = b1;
 		buffer[1] = b2;
 		buffer[2] = b3;
 		buffer[3] = b4;
-		throttle();
-		device.write(buffer, 0, buffer.length);
+		device.write(buffer, 0, 4);
 	}
 
-	private synchronized byte[] readI2C(int len) throws IOException {
-		throttle();
+	private byte[] readI2C(int len) throws IOException {
 		device.read(buffer, 0, len);
 		return buffer;
 	}
 	
-	private void throttle() {
-		while(System.currentTimeMillis()-lastThrottleTime < 100) {
-			sleep(10);
-		}
-		lastThrottleTime = System.currentTimeMillis();
-	}
-	
-	private static void sleep(long millis) {
-		try {
-			Thread.sleep(millis);
-		} catch (InterruptedException e) {
-
-		}
-	}
-
 	public enum PinMode {
 		INPUT((byte) 0), OUTPUT((byte) 1);
 		private byte v;

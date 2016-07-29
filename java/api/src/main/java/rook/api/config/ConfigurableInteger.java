@@ -6,8 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for fields in a configuration
- *  
+ * Annotation for fields in a configuration with context about allowed 64 bit
+ * integer values
+ * 
  * @author Eric Thill
  *
  */
@@ -15,7 +16,12 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ConfigurableInteger {
 	String comment() default "";
+
 	long min() default 0;
+
 	long max() default 0;
+
 	long increment() default 0;
+
+	String defaultValue() default "";
 }

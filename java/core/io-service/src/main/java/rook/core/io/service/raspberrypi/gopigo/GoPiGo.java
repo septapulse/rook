@@ -6,13 +6,14 @@ import org.slf4j.LoggerFactory;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.IOValue;
 import rook.core.io.service.IOInput;
 import rook.core.io.service.IOManager;
 import rook.core.io.service.IOOutput;
 import rook.core.io.service.raspberrypi.RaspberryPiDevice;
+import rook.core.io.service.raspberrypi.util.ThrottledI2CDevice;
 
 /**
  * A {@link RaspberryPiDevice} for Dexter Industries GoPiGo
@@ -36,28 +37,29 @@ public class GoPiGo implements RaspberryPiDevice {
 			byte bus = config.getBus() != null ? config.getBus() : GoPiGoHardware.DEFAULT_BUS;
 			byte address = config.getAddress() != null ? config.getAddress() : GoPiGoHardware.DEFAULT_ADDRESS;
 			I2CDevice device = I2CFactory.getInstance(bus).getDevice(address);
-			GoPiGoHardware hw = new GoPiGoHardware(device);
+			ThrottledI2CDevice throttledDevice = new ThrottledI2CDevice(device, config.getI2cThrottleIntervalMillis(), false);
+			GoPiGoHardware hw = new GoPiGoHardware(throttledDevice);
 			logger.info("GoPiGo firmware version: " + hw.readFirmwareVersion());
 			if(hasContent(config.getEncoderLeft()))
-				add(ioManager, new GoPiGoEncoderLeft(RID.create(config.getEncoderLeft()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoEncoderLeft(RID.create(config.getEncoderLeft()).immutable(), hw));
 			if(hasContent(config.getEncoderRight()))
-				add(ioManager, new GoPiGoEncoderRight(RID.create(config.getEncoderRight()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoEncoderRight(RID.create(config.getEncoderRight()).immutable(), hw));
 			if(hasContent(config.getLedLeft()))
-				add(ioManager, new GoPiGoLedLeft(RID.create(config.getLedLeft()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoLedLeft(RID.create(config.getLedLeft()).immutable(), hw));
 			if(hasContent(config.getLedRight()))
-				add(ioManager, new GoPiGoLedRight(RID.create(config.getLedRight()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoLedRight(RID.create(config.getLedRight()).immutable(), hw));
 			if(hasContent(config.getMotorLeft()))
-				add(ioManager, new GoPiGoMotorLeft(RID.create(config.getMotorLeft()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoMotorLeft(RID.create(config.getMotorLeft()).immutable(), hw));
 			if(hasContent(config.getMotorRight()))
-				add(ioManager, new GoPiGoMotorRight(RID.create(config.getMotorRight()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoMotorRight(RID.create(config.getMotorRight()).immutable(), hw));
 			if(hasContent(config.getServoEnabled()))
-				add(ioManager, new GoPiGoServoEnabled(RID.create(config.getServoEnabled()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoServoEnabled(RID.create(config.getServoEnabled()).immutable(), hw));
 			if(hasContent(config.getServoPosition()))
-				add(ioManager, new GoPiGoServoPosition(RID.create(config.getServoPosition()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoServoPosition(RID.create(config.getServoPosition()).immutable(), hw));
 			if(hasContent(config.getUltrasonicDistance()))
-				add(ioManager, new GoPiGoUltrasonicDistance(RID.create(config.getUltrasonicDistance()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoUltrasonicDistance(RID.create(config.getUltrasonicDistance()).immutable(), hw));
 			if(hasContent(config.getVoltage()))
-				add(ioManager, new GoPiGoVoltage(RID.create(config.getVoltage()).unmodifiable(), hw));
+				add(ioManager, new GoPiGoVoltage(RID.create(config.getVoltage()).immutable(), hw));
 			
 			// set encoder targets if they are enabled
 			if(hasContent(config.getEncoderLeft()) || hasContent(config.getEncoderRight())) {

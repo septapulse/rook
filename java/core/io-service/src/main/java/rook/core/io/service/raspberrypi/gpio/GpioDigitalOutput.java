@@ -29,7 +29,7 @@ public class GpioDigitalOutput implements IOOutput {
 	public GpioDigitalOutput(String pin, RID id, boolean shutdownState) {
 		this.pin = RaspiPin.getPinByName(pin);
 		this.shutdownState = shutdownState ? PinState.HIGH : PinState.LOW;
-		this.cap = new Cap().setCapType(CapType.OUTPUT).setDataType(DataType.BOOLEAN);
+		this.cap = new Cap().setCapType(CapType.OUTPUT).setDataType(DataType.BOOLEAN).setID(id.immutable());
 	}
 	
 	@Override
@@ -43,6 +43,11 @@ public class GpioDigitalOutput implements IOOutput {
 	@Override
 	public void write(IOValue value) {
 		output.setState(value.getValueAsBoolean());
+	}
+	
+	@Override
+	public RID id() {
+		return cap.getId();
 	}
 
 	@Override

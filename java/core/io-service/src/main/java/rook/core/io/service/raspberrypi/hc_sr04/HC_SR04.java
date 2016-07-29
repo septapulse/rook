@@ -10,8 +10,8 @@ import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.PinState;
 import com.pi4j.io.gpio.RaspiPin;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapType;
 import rook.core.io.proxy.message.DataType;
@@ -60,7 +60,7 @@ public class HC_SR04 implements IOInput, RaspberryPiDevice {
 		this.convertToInteger = convertToInteger;
 		this.minDistance = maxDinstance;
 		this.maxDistance = maxDinstance;
-		this.id = id;
+		this.id = id.immutable();
 		this.cap = new Cap().setCapType(CapType.INPUT)
 				.setDataType(convertToInteger ? DataType.INTEGER : DataType.FLOAT)
 				.setMinValue(minDistance)
@@ -83,13 +83,17 @@ public class HC_SR04 implements IOInput, RaspberryPiDevice {
 
 	@Override
 	public IOValue read() throws IOException {
-		value.setID(id);
 		if(convertToInteger) {
 			value.setValue((int)measure());
 		} else {
 			value.setValue(measure());
 		}
 		return value;
+	}
+	
+	@Override
+	public RID id() {
+		return id;
 	}
 
 	@Override

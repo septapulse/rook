@@ -6,12 +6,13 @@ import org.slf4j.LoggerFactory;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 
-import rook.api.InitException;
 import rook.api.RID;
+import rook.api.exception.InitException;
 import rook.core.io.proxy.message.IOValue;
 import rook.core.io.service.IOManager;
 import rook.core.io.service.raspberrypi.RaspberryPiDevice;
 import rook.core.io.service.raspberrypi.grovepi.GrovePiPlusConfig.DigitalPinMode;
+import rook.core.io.service.raspberrypi.util.ThrottledI2CDevice;
 
 /**
  * A {@link RaspberryPiDevice} for Dexter Industries GrovePi+
@@ -35,7 +36,8 @@ public class GrovePiPlus implements RaspberryPiDevice {
 			byte bus = config.getBus() != null ? config.getBus() : GrovePiPlusHardware.DEFAULT_BUS;
 			byte address = config.getAddress() != null ? config.getAddress() : GrovePiPlusHardware.DEFAULT_ADDRESS;
 			I2CDevice device = I2CFactory.getInstance(bus).getDevice(address);
-			GrovePiPlusHardware hw = new GrovePiPlusHardware(device);
+			ThrottledI2CDevice throttledDevice = new ThrottledI2CDevice(device, config.getI2cThrottleIntervalMillis(), false);
+			GrovePiPlusHardware hw = new GrovePiPlusHardware(throttledDevice);
 			logger.info("GrovePiPlus firmware version: " + hw.getFirmwareVersion());
 			addAnalogPin(ioManager, hw, 0, config.getA0());
 			addAnalogPin(ioManager, hw, 1, config.getA1());
@@ -67,7 +69,7 @@ public class GrovePiPlus implements RaspberryPiDevice {
 			RID id = RID.create(cfg.getPinName());
 			GrovePiPlusConfig.DigitalPinMode pinMode = cfg.getPinMode();
 			IOValue shutdownValue = cfg.getShutdownValue() != null ?
-					new IOValue().setID(id).setValue(cfg.getShutdownValue()) : null;
+					new IOValue().setValue(cfg.getShutdownValue()) : null;
 			logger.info("Initializing D" + pin + " - ID=" + id + " PinMode=" + pinMode);
 			if(pinMode == DigitalPinMode.INPUT) {
 				ioManager.addInput(id, new GrovePiPlusDigitalInput((byte)pin, id, hw));

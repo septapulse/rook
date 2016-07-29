@@ -16,7 +16,7 @@ import rook.api.RID;
 import rook.api.Service;
 import rook.api.transport.GrowableBuffer;
 import rook.api.transport.Transport;
-import rook.api.transport.event.BroadcastMessage;
+import rook.api.transport.consumer.BroadcastMessageConsumer;
 import rook.core.io.proxy.message.Cap;
 import rook.core.io.proxy.message.CapsDeserializer;
 
@@ -38,7 +38,8 @@ public class CapsCache {
 	
 	public CapsCache(Transport transport) {
 		this.transport = transport;
-		transport.bcast().addMessageConsumer(IOGroups.CAPS, capsConsumer, new CapsDeserializer());
+		transport.bcast().addMessageConsumer(IOGroups.CAPS, null, capsListener, new CapsDeserializer());
+		transport.bcast().join(IOGroups.CAPS);
 	}
 	
 	public void reset() {
@@ -51,21 +52,22 @@ public class CapsCache {
 	}
 	
 	void stop() {
-		transport.bcast().removeMessageConsumer(IOGroups.CAPS, capsConsumer);
+		transport.bcast().leave(IOGroups.CAPS);
+		transport.bcast().removeMessageConsumer(capsListener);
 	}
 	
 	public void requestCaps() {
 		transport.bcast().send(IOGroups.PROBE, PROBE_PAYLOAD);
 	}
 
-	private final Consumer<BroadcastMessage<List<Cap>>> capsConsumer = new Consumer<BroadcastMessage<List<Cap>>>() {
+	private final BroadcastMessageConsumer<List<Cap>> capsListener = new BroadcastMessageConsumer<List<Cap>>() {
 		@Override
-		public void accept(BroadcastMessage<List<Cap>> t) {
-			logger.info("Received caps from " + t.getFrom() + ": " + t);
-			RID serviceID = t.getFrom();
-			List<Cap> caps = t.getPayload();
+		public void onBroadcastMessage(RID from, RID group, List<Cap> caps) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("Received caps from " + from + ": " + caps);
+			}
 			synchronized (serviceCaps) {
-				serviceCaps.put(serviceID.unmodifiable(), caps);
+				serviceCaps.put(from.immutable(), caps);
 				
 				// update "allServices" caps list
 				List<Cap> newCaps = new ArrayList<>();

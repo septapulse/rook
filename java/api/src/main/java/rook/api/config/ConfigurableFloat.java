@@ -6,8 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for fields in a configuration
- *  
+ * Annotation for fields in a configuration with context about allowed IEEE
+ * floating point values
+ * 
  * @author Eric Thill
  *
  */
@@ -15,7 +16,10 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ConfigurableFloat {
 	String comment() default "";
+
 	double min() default 0;
+
 	double max() default 0;
+
 	double increment() default 0;
 }

@@ -1,0 +1,65 @@
+<!doctype html public "-//IETF//DTD HTML 2.0//EN">
+<html>
+  <head>
+    <title>Rook - Robotics Orchestration Kit</title>
+    <link rel="stylesheet" type="text/css" href="rook.css">
+  </head>
+<body>
+  <script src="js/rook.js"></script>
+  <script src="routing.js"></script>
+  <script>init()</script>
+  
+  <div><p class="spaced">
+    <mark class="spacedColor">Ro</mark>botics <mark class="spacedColor">O</mark>rchestration <mark class="spacedColor">K</mark>it
+  </p></div>
+
+  <nav>
+    <a href="./index.html"><button>Home</button></a>
+    <a href="./routing.html"><button style="background-color: #ff5800">Routing</button></a>
+    <a href="./services.html"><button>Services</button></a>
+    <a href="./sensors.html"><button>Sensors</button></a>
+  </nav>
+  
+  <main>
+    <item>
+      <ul>
+        <li>
+          <h2>tcp</h2>
+          <div id="tcp_running"></div>
+          <div class="contentParent">
+            <div class="contentLeft">
+              <button type="button" onclick='open_dialog("TCP", "open_tcp_router_dialog", "open_tcp_bridge_dialog")'>+</button>
+            </div>
+          </div>
+        </li>
+        <li>
+          <h2>aeron (experimental)</h2>
+          <div id="aeron_running"></div>
+          <div class="contentParent">
+            <div class="contentLeft">
+                <button type="button" onclick='open_dialog("Aeron", "open_aeron_router_dialog", "open_aeron_bridge_dialog")'>+</button>
+            </div>
+          </div>
+          </div>
+        </li>
+        <li>
+          <h2>mqtt (experimental)</h2>
+          <div id="mqtt_running"></div>
+          <div class="contentParent">
+            <div class="contentLeft">
+              <button type="button" onclick='open_dialog("MQTT", null, "open_mqtt_bridge_dialog")'>+</button>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </item>
+  </main>
+  
+  <dialog id="dialog">
+    <popup>
+      <div id="dialog_div"/>
+    </popup>
+  </dialog>
+
+</body>
+</html>
