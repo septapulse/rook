@@ -10,41 +10,58 @@ if [[ -z $TARGET ]]; then
   printf "Enter Target Choice: "
   read CHOICE
   if [[ $CHOICE == "1" ]]; then
-    TARGET="./target/rook/"
+    LOCAL_TARGET="./target/rook/"
   elif [[ $CHOICE == "2" ]]; then
-    TARGET="${HOME}/rook/"
+    LOCAL_TARGET="${HOME}/rook/"
   else
     echo "ProTip: You can pass a custom target as an argument to bypass this prompt"
     printf "Enter Custom Target Path: "
-    read TARGET;
+    read LOCAL_TARGET;
   fi
 fi
 
-rm -rf "${TARGET}"
-mkdir -p "${TARGET}"
-TARGET=`cd "${TARGET}"; pwd`
-echo "Target: ${TARGET}"
-
-if [[ "${TARGET: -1}" != "/" ]]; then
-  TARGET="${TARGET}/"
+# Check if target is local or remote
+if [[ $TARGET == *":"* ]]; then
+  LOCAL_TARGET="./target/.tmp"
+  REMOTE_TARGET=$TARGET
+else
+  LOCAL_TARGET=$TARGET
 fi
-mkdir -p ${TARGET}
 
-echo "Building to ${TARGET}"
+# setup LOCAL_TARGET and REMOTE_TARGET
+rm -rf "${LOCAL_TARGET}"
+mkdir -p "${LOCAL_TARGET}"
+LOCAL_TARGET=`cd "${LOCAL_TARGET}"; pwd`
+if [[ -z $REMOTE_TARGET ]]; then
+  echo "Target: ${LOCAL_TARGET}"
+else
+  echo "Local Target: $LOCAL_TARGET"
+  echo "Remote Target: $REMOTE_TARGET"
+fi
 
-BIN=${TARGET}bin/
-PLATFORM=${TARGET}platform/
-USER=${TARGET}usr/
+# Make sure directory ends with a /
+if [[ "${LOCAL_TARGET: -1}" != "/" ]]; then
+  LOCAL_TARGET="${LOCAL_TARGET}/"
+fi
 
-#mkdir -p $BIN
+# Make the local directory
+mkdir -p ${LOCAL_TARGET}
+
+# Setup build directories
+echo "Building to ${LOCAL_TARGET}"
+BIN=${LOCAL_TARGET}bin/
+PLATFORM=${LOCAL_TARGET}platform/
+USER=${LOCAL_TARGET}usr/
 mkdir -p $PLATFORM
 mkdir -p $USER
 
+# Copy scripts
 echo "Copying Scripts"
 cd ${DIR}
-cp -f scripts/start.sh ${TARGET}/
-cp -f scripts/stop.sh ${TARGET}/
+cp -f scripts/start.sh ${LOCAL_TARGET}/
+cp -f scripts/stop.sh ${LOCAL_TARGET}/
 
+# Build rook/java
 echo "Building Java Platform"
 cd ${DIR}/java/
 mvn clean install package assembly:directory -DskipTests
@@ -52,3 +69,12 @@ echo "Replacing ${PLATFORM}"
 rm -rf ${PLATFORM}
 mkdir -p ${PLATFORM}
 cp -r target/rook-*-distribution/* ${PLATFORM}
+
+# Copy to remote
+if [[ -z $REMOTE_TARGET ]]; then
+  # No remote. Done now
+  echo "Done."
+else
+  scp -r $LOCAL_TARGET $REMOTE_TARGET
+  echo "Copied. Done."
+fi
