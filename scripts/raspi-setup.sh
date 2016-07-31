@@ -8,7 +8,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # check internet connection
-ping -qc 1 www.github.com &> /dev/null || { echo "Could not connect to www.github.com. Exiting..." ; exit 1 }
+ping -qc 1 www.github.com &> /dev/null || { echo "Could not connect to www.github.com. Exiting..." ; exit 1; }
 
 # starting. will take a while.
 printf "\n\nThis may take a while... Go grab a coffee or something.\n\n"
