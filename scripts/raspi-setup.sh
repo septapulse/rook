@@ -11,7 +11,7 @@ fi
 ping -qc 1 www.github.com &> /dev/null || { echo "Could not connect to www.github.com. Exiting..." ; exit 1; }
 
 # starting. will take a while.
-printf "\n\nThis may take a while... Go grab a coffee or something.\n\n"
+printf "\n\n\n\nThis may take a while... Go grab a coffee or something.\n\n\n\n\n"
 sleep 5
 
 # update system
