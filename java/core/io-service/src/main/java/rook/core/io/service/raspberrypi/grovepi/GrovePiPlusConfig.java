@@ -1,7 +1,6 @@
 package rook.core.io.service.raspberrypi.grovepi;
 
 import rook.api.config.Configurable;
-import rook.api.config.ConfigurableInteger;
 
 /**
  * A configuration for a {@link GrovePiPlus}
@@ -10,9 +9,9 @@ import rook.api.config.ConfigurableInteger;
  *
  */
 public class GrovePiPlusConfig {
-	@ConfigurableInteger(comment = "I2C Bus")
+	@Configurable(comment = "I2C Bus")
 	private Byte bus;
-	@ConfigurableInteger(comment = "I2C Address")
+	@Configurable(comment = "I2C Address")
 	private Byte address;
 	@Configurable(comment = "Pin A0")
 	private AnalogPin A0;
@@ -34,7 +33,7 @@ public class GrovePiPlusConfig {
 	private DigitalPin D7;
 	@Configurable(comment = "Pin D8")
 	private DigitalPin D8;
-	@ConfigurableInteger(comment = "I2C Throttle Interval Millis", defaultValue = "20")
+	@Configurable(comment = "I2C Throttle Interval Millis", defaultValue = "20")
 	private long i2cThrottleIntervalMillis = 20;
 
 	public Byte getBus() {
@@ -115,7 +114,7 @@ public class GrovePiPlusConfig {
 		private String pinName;
 		@Configurable(comment = "The pin's mode")
 		private DigitalPinMode pinMode;
-		@ConfigurableInteger(min=0, max=255, increment=1, 
+		@Configurable(min="0", max="255", increment="1", 
 				comment = "The pin's value to set when the system is shutdown (for OUTPUT and PWM only)")
 		private Integer shutdownValue;
 		

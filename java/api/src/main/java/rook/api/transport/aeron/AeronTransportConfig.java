@@ -1,7 +1,6 @@
 package rook.api.transport.aeron;
 
 import rook.api.config.Configurable;
-import rook.api.config.ConfigurableInteger;
 
 /**
  * Parsed configuration for an {@link AeronTransport}
@@ -19,9 +18,9 @@ public class AeronTransportConfig {
 	private String aeronDirectoryName = DEFAULT_DIRECTORY_NAME;
 	@Configurable(comment="Aeron Channel", defaultValue="aeron:ipc")
 	private String channel = DEFAULT_CHANNEL;
-	@ConfigurableInteger(comment="Aeron Stream ID", defaultValue="1")
+	@Configurable(comment="Aeron Stream ID", defaultValue="1")
 	private int streamId = DEFAULT_STREAM_ID;
-	@ConfigurableInteger(comment="Subscriber Fragment Limit", defaultValue="10")
+	@Configurable(comment="Subscriber Fragment Limit", defaultValue="10")
 	private int subscriberFragmentLimit = DEFAULT_SUBSCRIBER_FRAGMENT_LIMIT;
 	
 	public String getAeronDirectoryName() {

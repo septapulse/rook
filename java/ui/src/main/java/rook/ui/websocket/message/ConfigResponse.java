@@ -12,6 +12,7 @@ public class ConfigResponse {
 	private Long id;
 	private boolean success;
 	private List<ConfigInfo> cfgs;
+	private TemplateObject template;
 //	private Map<String, Object> cfg;
 //	private String template;
 	
@@ -38,6 +39,15 @@ public class ConfigResponse {
 	
 	public List<ConfigInfo> getCfgs() {
 		return cfgs;
+	}
+	
+	public ConfigResponse setTemplate(TemplateObject template) {
+		this.template = template;
+		return this;
+	}
+	
+	public TemplateObject getTemplate() {
+		return template;
 	}
 	
 //	public void setCfg(Map<String, Object> cfg) {

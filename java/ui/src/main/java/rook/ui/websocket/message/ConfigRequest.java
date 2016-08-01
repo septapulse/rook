@@ -11,6 +11,7 @@ public class ConfigRequest {
 	private Long id;
 	private String pkg;
 	private String sid;
+	private String[] path;
 //	private String name;
 //	private String library;
 //	private Map<String, Object> cfg;
@@ -29,5 +30,9 @@ public class ConfigRequest {
 
 	public String getSid() {
 		return sid;
+	}
+	
+	public String[] getPath() {
+		return path;
 	}
 }

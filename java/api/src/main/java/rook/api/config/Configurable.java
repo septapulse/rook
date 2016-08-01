@@ -18,4 +18,10 @@ public @interface Configurable {
 	String comment() default "";
 
 	String defaultValue() default "";
+	
+	String min() default "";
+
+	String max() default "";
+
+	String increment() default "";
 }

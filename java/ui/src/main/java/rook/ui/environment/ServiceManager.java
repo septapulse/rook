@@ -36,9 +36,9 @@ public class ServiceManager {
 	}
 
 	private void iterateJavaServices(String pkgFilter, Consumer<File> c) {
-		for (File servicseDir : servicesDirs) {
-			if (servicseDir.isDirectory()) {
-				File javaDir = new File(servicseDir, "java");
+		for (File servicesDir : servicesDirs) {
+			if (servicesDir.isDirectory()) {
+				File javaDir = new File(servicesDir, "java");
 				if (javaDir.isDirectory()) {
 					// iterate through each java service package
 					for (File serviceDir : javaDir.listFiles()) {
@@ -110,5 +110,5 @@ public class ServiceManager {
 		});
 		return result;
 	}
-
+	
 }

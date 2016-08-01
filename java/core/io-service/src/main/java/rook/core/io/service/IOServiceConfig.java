@@ -1,6 +1,6 @@
 package rook.core.io.service;
 
-import rook.api.config.ConfigurableInteger;
+import rook.api.config.Configurable;
 
 /**
  * Base configuration needed for an {@link IOService}
@@ -9,12 +9,12 @@ import rook.api.config.ConfigurableInteger;
  *
  */
 public class IOServiceConfig {
-	@ConfigurableInteger(min=1, max=Long.MAX_VALUE, increment=1, 
+	@Configurable(min="1", increment="1", 
 			comment="Number of milliseconds between broadcasting IOInput changes",
 			defaultValue="100")
 	private long broadcastInterval = 100;
 	
-	@ConfigurableInteger(min=1, max=Long.MAX_VALUE, increment=1, 
+	@Configurable(min="1", increment="1", 
 			comment="When disconnected, the number of milliseconds between reconnect attempts",
 			defaultValue="1000")
 	private long reconnectInterval = 1000;

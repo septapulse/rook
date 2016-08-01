@@ -1,6 +1,6 @@
 package rook.core.io.service.raspberrypi.gopigo;
 
-import rook.api.config.ConfigurableInteger;
+import rook.api.config.Configurable;
 
 /**
  * A configuration for a {@link GoPiGo}
@@ -9,31 +9,31 @@ import rook.api.config.ConfigurableInteger;
  *
  */
 public class GoPiGoConfig {
-	@ConfigurableInteger(comment = "I2C Bus")
+	@Configurable(comment = "I2C Bus")
 	private Byte bus;
-	@ConfigurableInteger(comment = "I2C Address")
+	@Configurable(comment = "I2C Address")
 	private Byte address;
-	@ConfigurableInteger(comment = "Left Encoder Input ID")
+	@Configurable(comment = "Left Encoder Input ID")
 	private String encoderLeft;
-	@ConfigurableInteger(comment = "Right Encoder Input ID")
+	@Configurable(comment = "Right Encoder Input ID")
 	private String encoderRight;
-	@ConfigurableInteger(comment = "Left LED Output ID")
+	@Configurable(comment = "Left LED Output ID")
 	private String ledLeft;
-	@ConfigurableInteger(comment = "Right LED Output ID")
+	@Configurable(comment = "Right LED Output ID")
 	private String ledRight;
-	@ConfigurableInteger(comment = "Left Motor Output ID")
+	@Configurable(comment = "Left Motor Output ID")
 	private String motorLeft;
-	@ConfigurableInteger(comment = "Right Motor Output ID")
+	@Configurable(comment = "Right Motor Output ID")
 	private String motorRight;
-	@ConfigurableInteger(comment = "Servo Position Output ID")
+	@Configurable(comment = "Servo Position Output ID")
 	private String servoPosition;
-	@ConfigurableInteger(comment = "Servo Enabled Output ID")
+	@Configurable(comment = "Servo Enabled Output ID")
 	private String servoEnabled;
-	@ConfigurableInteger(comment = "Ultrasonic Distance Input ID")
+	@Configurable(comment = "Ultrasonic Distance Input ID")
 	private String ultrasonicDistance;
-	@ConfigurableInteger(comment = "Voltage Input ID")
+	@Configurable(comment = "Voltage Input ID")
 	private String voltage;
-	@ConfigurableInteger(comment = "I2C Throttle Interval Millis", defaultValue = "20")
+	@Configurable(comment = "I2C Throttle Interval Millis", defaultValue = "20")
 	private long i2cThrottleIntervalMillis = 20;
 
 	public Byte getBus() {

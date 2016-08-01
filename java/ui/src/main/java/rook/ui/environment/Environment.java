@@ -61,7 +61,7 @@ public class Environment {
 	public void start() throws InitException {
 		try {
 			this.serviceManager = new ServiceManager(serviceDirs);
-			this.configManager = new ConfigManager(cfgDirs);
+			this.configManager = new ConfigManager(cfgDirs, serviceDirs);
 			this.runtimeManager = new RuntimeManager(transportType, transportConfig,
 					jreDir, apiDir, runDir, serviceDirs, cfgDirs);
 			

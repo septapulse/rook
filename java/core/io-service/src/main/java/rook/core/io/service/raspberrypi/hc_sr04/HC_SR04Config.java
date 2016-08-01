@@ -1,7 +1,6 @@
 package rook.core.io.service.raspberrypi.hc_sr04;
 
 import rook.api.config.Configurable;
-import rook.api.config.ConfigurableFloat;
 
 /**
  * A configuration for a {@link HC_SR04}
@@ -18,9 +17,9 @@ public class HC_SR04Config {
 	public String echoPin;
 	@Configurable(comment = "Round distance to integer value")
 	public boolean convertToInteger = false;
-	@ConfigurableFloat(comment = "Minimum distance that can be represented (Default: 0)")
+	@Configurable(comment = "Minimum distance that can be represented (Default: 0)")
 	public double minDistance = 0;
-	@ConfigurableFloat(comment = "Maximun distance that can be represented (Default: 1000)")
+	@Configurable(comment = "Maximun distance that can be represented (Default: 1000)")
 	public double maxDinstance = 1000.0;
 	
 	@Override

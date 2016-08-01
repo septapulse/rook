@@ -14,6 +14,7 @@ import rook.ui.environment.ConfigManager;
 import rook.ui.environment.Environment;
 import rook.ui.websocket.message.ConfigRequest;
 import rook.ui.websocket.message.ConfigResponse;
+import rook.ui.websocket.message.TemplateObject;
 
 /**
  * WebSocket that handles configuration messages
@@ -47,6 +48,11 @@ public class ConfigWebSocket {
 		switch(type) {
 		case "get_configs":
 			resp.setCfgs(configManager.getServiceConfigs(req.getPkg(), req.getSid()));
+			break;
+		case "get_template":
+			TemplateObject template = configManager.getConfigTemplate(req.getPkg(), req.getSid(), req.getPath());
+			resp.setTemplate(template);
+			resp.setSuccess(template != null);
 			break;
 		default:
 			resp.setSuccess(false);
