@@ -10,9 +10,9 @@ if [[ -z $TARGET ]]; then
   printf "Enter Target Choice: "
   read CHOICE
   if [[ $CHOICE == "1" ]]; then
-    LOCAL_TARGET="./target/rook/"
+    TARGET="./target/rook/"
   elif [[ $CHOICE == "2" ]]; then
-    LOCAL_TARGET="${HOME}/rook/"
+    TARGET="${HOME}/rook/"
   else
     echo "ProTip: You can pass a custom target as an argument to bypass this prompt"
     printf "Enter Custom Target Path: "
@@ -25,6 +25,7 @@ if [[ $TARGET == *":"* ]]; then
   LOCAL_TARGET="./target/.tmp"
   REMOTE_TARGET=$TARGET
 else
+  echo $TARGET
   LOCAL_TARGET=$TARGET
 fi
 
