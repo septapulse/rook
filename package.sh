@@ -30,7 +30,7 @@ else
 fi
 
 # setup LOCAL_TARGET and REMOTE_TARGET
-rm -rf "${LOCAL_TARGET}"
+rm -rf "${LOCAL_TARGET}/platform"
 mkdir -p "${LOCAL_TARGET}"
 LOCAL_TARGET=`cd "${LOCAL_TARGET}"; pwd`
 if [[ -z $REMOTE_TARGET ]]; then
