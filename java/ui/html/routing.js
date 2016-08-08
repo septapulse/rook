@@ -13,15 +13,15 @@ function handle_running_instances(json) {
 }
 
 function handle_running_instance(inst) {
-  var div = document.getElementById(inst.pkg+"_running");
-  if(div != null) {
-  	div.innerHTML += "<div class='contentParent' id='uid_"
-  	    + inst.uid+"'><div class='contentLeft'><button type='button' onclick='stop_bridge("
-  	    + inst.uid + ")'>Stop</button><button type='button' id='btn_log_"
-  	    + inst.uid +"' onclick='toggle_log_stream("
-  	    + inst.uid + ")'>Log</button></div><div class='contentRight'><h4>"
-  	    + inst.name + "</h4></div></div>";
-  }
+  // make sure package exists
+  if(!($("#pkg_"+inst.pkg).length > 0))
+    return;
+  // create
+  var node = template_create("template_instance", "inst_"+inst.uid, $("#pkg_"+inst.pkg).find('[name=running]'));
+  node.find('[name="name"]').html(inst.name);
+  node.find('[name="stop"]').attr("onclick", "stop_service("+inst.uid+")");
+  node.find('[name="log_toggle"]').attr("onclick", "toggle_log_stream("+inst.uid+")");
+
 }
 
 function stop_bridge(uid) {
@@ -29,7 +29,7 @@ function stop_bridge(uid) {
 }
 
 function toggle_log_stream(uid) {
-  if(log_sessions[uid] == null) {
+  if($("#log_"+uid).length == 0) {
     open_log_stream(uid);
   } else {
     close_log_stream(uid);
@@ -42,23 +42,21 @@ function close_log_stream(uid) {
     ws.close();
     delete log_sessions[uid];
   } 
-  var div = document.getElementById("div_log_"+uid);
-  if(div != null) {
-    div.parentNode.removeChild(div);
+  var log = $("#log_"+uid);
+  if(log.length > 0) {
+    log.remove();
   }
-  document.getElementById("btn_log_"+uid).style.background='#585858';
+  $("#inst_"+uid).find('[name=log_toggle]').removeClass("selected");
 }
 
 function open_log_stream(uid) {
-  var parentDiv = document.getElementById("uid_"+uid);
-  parentDiv.innerHTML += "<div id='div_log_"+uid+"'><log><textarea wrap='off' readonly id='log_"+uid+"'></textarea></log></div>";
+  template_create("template_log", "log_"+uid, $("#inst_"+uid));
   log_sessions[uid] = rook_runtime_open_log_stream(uid, handle_log, log_sessions);
-  document.getElementById("btn_log_"+uid).style.background='#ff5800';
+  $("#inst_"+uid).find('[name=log_toggle]').addClass("selected");;
 }
 
 function handle_log(json) {
-  //console.log("handle_log: " + json.uid + " " + json.m);
-  var textarea = document.getElementById("log_"+json.uid);
+  var textarea = $("#inst_"+json.uid).find('[name=log]')[0];
   if(textarea != null) {
     textarea.value += json.m;
     textarea.value += "\r\n";
@@ -183,4 +181,15 @@ function handle_process_start(json) {
   if(json.instance != null) {
   	handle_running_instance(json.instance);
   }
+}
+
+function template_create(template_id, new_id, parent) {
+  var template = document.getElementById(template_id);
+  var copy = template.cloneNode(true);
+  copy.id=new_id;
+  if(parent != null) {
+	parent.append(copy);  
+  }
+  $(copy).show();
+  return $(copy);
 }

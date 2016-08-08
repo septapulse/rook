@@ -1,23 +1,26 @@
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment  {
+  display: none;
+}
+::-webkit-scrollbar-track-piece  {
+  background-color: #373737;
+  -webkit-border-radius: 6px;
+}
+::-webkit-scrollbar-thumb {
+  -webkit-border-radius: 6px;
+  background: #878787;
+}
+
+
 body {
   color: #ffffff;
   background-color: #373737;
   text-align: center;
   font-family: "Palatino Linotype", "Palatino", "serif";
-}
-
-dialog {
-  background-color: rgba(0,0,0,0);
-  border: 0;
-  min-width: 50%;
-}
-
-dialog::backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.8);
 }
 
 nav {
@@ -59,11 +62,16 @@ main h3, main h4 {
   margin: 1px 5px;
 }
 
-item {
-  
+item div {
+  width: 90%;
+  background-color: #373737;
+  margin: 10px auto;
+  padding: 5px 5px;
+  text-align: left;
+  border-radius: 5px;
 }
 item ul {
-  width: 80%;
+  width: 90%;
   margin: 0 auto;
   list-style: none;
   padding-left: 0;
@@ -79,7 +87,7 @@ item li {
 }
 item h1, item h2 {
   color: #ff5800;
-  margin: 0 5px;
+  margin: 1px 5px;
 }
 item h3, item h4 {
   color: #ffffff;
@@ -87,10 +95,10 @@ item h3, item h4 {
 }
 item button {
   background: #585858;
-  padding: 1px 5px;
+  padding: 5px 10px;
   margin: 0 1px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 10px;
   color: #ffffff;
   text-decoration: none;
 }
@@ -101,90 +109,67 @@ item button:active {
   background: #ff5800;
 }
 
-popup div {
+
+dialog {
+  background-color: rgba(0,0,0,0);
+  border: 0;
+  min-width: 50%;
+}
+dialog::backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.8);
+}
+dialog div {
   border-radius: 15px;
   background-color: #585858;
-  color: #ffffff;
   padding: 10px 10px;
+  max-width: 80%;
 }
-popup button {
+dialog button {
   background: #585858;
-  padding: 5px 20px;
+  padding: 5px 10px;
+  margin: 0 1px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 10px;
   color: #ffffff;
   text-decoration: none;
-  width: 100%;
 }
-popup button:hover {
+dialog button:hover {
   background: #ff5800;
 }
-popup button:active {
+dialog button:active {
   background: #ff5800;
 }
-popup h1, popup h2 {
-  color: #ffffff;
-  margin: 3px 3px;
-}
-popup h3, popup h4 {
-  color: #ffffff;
-  margin: 3px 3px;
-}
-popup input {
-  color: #ffffff;
-  background: #373737;
-  border-radius: 5px;
+dialog h1, dialog h2 {
+  color: #ff5800;
+  margin: 3px 4px;
+  background-color: #373737;
+  border-radius: 10px;
   border: none;
-  width: 75%;
-  text-align: center;
 }
+dialog h3, dialog h4 {
+  color: #ffffff;
+  margin: 1px 5px;
+}
+
 
 log textarea {
   color: #ff5800;
   background-color: #000000;
   border-radius: 10px;
-  width: 80%;
+  width: 100%;
   height: 15em;
   outline: none;
   border: none;
   overflow-x: auto;
   overflow-y: auto;
 }
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-button:start:decrement,
-::-webkit-scrollbar-button:end:increment  {
-  display: none;
-}
-::-webkit-scrollbar-track-piece  {
-  background-color: #373737;
-  -webkit-border-radius: 6px;
-}
-::-webkit-scrollbar-thumb {
-  -webkit-border-radius: 6px;
-  background: #878787;
-}
 
-.contentParent {
-  width: 100%;
-  padding: 5px 5px;
-  text-align: center;
-  vertical-align: middle;
-  overflow: hidden;
-  margin: 0 auto;
-}
-.contentLeft {
-  float: left;
-  text-align: left;
-  padding: 2px 10px;
-}
-.contentRight {
-  float: left;
-  text-align: left;
-  padding: 2px 10px;
-}
+
 .spaced {
   letter-spacing: 4px;
   color: #ffffff;
@@ -195,8 +180,15 @@ log textarea {
   color: #ff5800;
   background-color: #373737;  
 }
-.orangeContainer {
-  background-color: #ff5800;
-  border-radius: 10px;
-  border: none;
+.template {
+  display: none;
+}
+.inline {
+  display: inline;
+}
+.selected {
+  background: #FF5800;
+}
+.wide {
+  width: 100%;
 }

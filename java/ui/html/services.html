@@ -6,6 +6,7 @@
   </head>
 <body>
   <script src="js/rook.js"></script>
+  <script src="js/jquery-3.1.0.js"></script>
   <script src="services.js"></script>
   <script>init()</script>
   
@@ -21,16 +22,33 @@
   </nav>
   
   <main>
-  	<item>
-      <ul id="service_list">
-      </ul>
-    </item>
+    <div id="package_list"></div>
   </main>
   
+  <item id="template_package" class="template">
+    <div>
+    <h2 name="title">PACKAGE</h2>
+    <ul name="running"></ul>
+    <ul><li><button name="add_instance" type="button">+</button></li></ul>
+    </div>
+  </item>
+  
+  <li id="template_instance" class="template">
+    <button name="stop" type='button'>Stop</button>
+    <button name="log_toggle" type='button'>Log</button>
+    <h4 name="name" class="inline">NAME</h4>
+  </li>
+  
+  <log id="template_log" class="template">
+    <textarea wrap="off" readonly name="log"></textarea>
+  </log>
+  
+  <h2 id="template_dialog_title" class="template wide">TITLE</h2>
+  
+  <button id="template_dialog_select" class="template wide">BUTTON</button>
+  
   <dialog id="dialog">
-    <popup>
-      <div id="dialog_div"/>
-    </popup>
+    <div id="dialog_div"/>
   </dialog>
 
 </body>

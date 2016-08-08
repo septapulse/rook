@@ -6,6 +6,7 @@
   </head>
 <body>
   <script src="js/rook.js"></script>
+  <script src="js/jquery-3.1.0.js"></script>
   <script src="sensors.js"></script>
   <script>init()</script>  
   
@@ -25,17 +26,30 @@
       <ul>
         <li>
           <h2>Inputs</h2>
-          <div class="contentParent">
-          	<div id="inputs" class="contentLeft"></div>
+          <div>
+            <table id="inputs"></table>
           </div>
         </li>
         <li>
           <h2>Outputs</h2>
-          <div class="contentParent">
-            <div id="outputs" class="contentLeft"></div>
+          <div>
+            <table id="outputs"></table>
           </div>
         </li>
+      </ul>
+    </item>
   </main>
+  
+  <table class="template">
+    <tr id="template_row">
+      <td class='key'>
+        <label name='key'>KEY</label>
+      </td>
+      <td class='value'>
+        <label name='value'>null</label>
+      </td>
+    </tr>
+  </table>
 
 </body>
 </html>

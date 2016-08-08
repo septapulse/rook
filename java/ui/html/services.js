@@ -15,8 +15,9 @@ function handle_packages(json) {
 }
 
 function handle_package(package) {
-  var ul = document.getElementById("service_list");
-  ul.innerHTML += "<li><h2>" + package + "</h2><div id='"+package+"_running'></div><div class='contentParent'><div class='contentLeft'><button type='button' onclick='open_package_dialog(\"" + package + "\")'>+</button></div></div>";
+  var node = template_create("template_package", "pkg_"+package, $("#package_list"));
+  node.find('[name="title"]').html(package);
+  node.find('[name="add_instance"]').attr("onclick", "open_package_dialog(\"" + package + "\")");
 }
 
 function handle_running_instances(json) {
@@ -28,15 +29,14 @@ function handle_running_instances(json) {
 }
 
 function handle_running_instance(inst) {
-  var div = document.getElementById(inst.pkg+"_running");
-  if(div != null) {
-  	div.innerHTML += "<div class='contentParent' id='uid_"
-  	    + inst.uid+"'><div class='contentLeft'><button type='button' onclick='stop_service("
-  	    + inst.uid + ")'>Stop</button><button type='button' id='btn_log_"
-  	    + inst.uid +"' onclick='toggle_log_stream("
-  	    + inst.uid + ")'>Log</button></div><div class='contentRight'><h4>"
-  	    + inst.name + "</h4></div></div>";
-  }
+  // make sure package exists
+  if(!($("#pkg_"+inst.pkg).length > 0))
+    return;
+  // create
+  var node = template_create("template_instance", "inst_"+inst.uid, $("#pkg_"+inst.pkg).find('[name=running]'));
+  node.find('[name="name"]').html(inst.name);
+  node.find('[name="stop"]').attr("onclick", "stop_service("+inst.uid+")");
+  node.find('[name="log_toggle"]').attr("onclick", "toggle_log_stream("+inst.uid+")");
 }
 
 function stop_service(uid) {
@@ -44,7 +44,7 @@ function stop_service(uid) {
 }
 
 function toggle_log_stream(uid) {
-  if(log_sessions[uid] == null) {
+  if($("#log_"+uid).length == 0) {
     open_log_stream(uid);
   } else {
     close_log_stream(uid);
@@ -57,23 +57,21 @@ function close_log_stream(uid) {
     ws.close();
     delete log_sessions[uid];
   } 
-  var div = document.getElementById("div_log_"+uid);
-  if(div != null) {
-    div.parentNode.removeChild(div);
+  var log = $("#log_"+uid);
+  if(log.length > 0) {
+    log.remove();
   }
-  document.getElementById("btn_log_"+uid).style.background='#585858';
+  $("#inst_"+uid).find('[name=log_toggle]').removeClass("selected");
 }
 
 function open_log_stream(uid) {
-  var parentDiv = document.getElementById("uid_"+uid);
-  parentDiv.innerHTML += "<div id='div_log_"+uid+"'><log><textarea wrap='off' readonly id='log_"+uid+"'></textarea></log></div>";
+  template_create("template_log", "log_"+uid, $("#inst_"+uid));
   log_sessions[uid] = rook_runtime_open_log_stream(uid, handle_log, log_sessions);
-  document.getElementById("btn_log_"+uid).style.background='#ff5800';
+  $("#inst_"+uid).find('[name=log_toggle]').addClass("selected");;
 }
 
 function handle_log(json) {
-  //console.log("handle_log: " + json.uid + " " + json.m);
-  var textarea = document.getElementById("log_"+json.uid);
+  var textarea = $("#inst_"+json.uid).find('[name=log]')[0];
   if(textarea != null) {
     textarea.value += json.m;
     textarea.value += "\r\n";
@@ -83,9 +81,7 @@ function handle_log(json) {
 
 function handle_stopped_service(json) {
   if(json.success && json.instance != null) {
-    var parent = document.getElementById(json.instance.pkg+"_running");
-    var div = document.getElementById("uid_"+json.instance.uid);
-    parent.removeChild(div);
+    $("#inst_"+json.instance.uid).remove();
   }
 }
 
@@ -94,14 +90,21 @@ function open_package_dialog(pkg) {
 }
 
 function handle_package_dialog(json) {
-  var div = document.getElementById("dialog_div");
-  div.innerHTML = "<h2 class='orangeContainer'>Service Type</h2>";
+  var dialog = $("#dialog_div").empty();
+  
+  template_create("template_dialog_title", null, dialog)
+    .html("Service Type");
+  
   if(json.packageInfo != null && json.packageInfo.services != null) {
     json.packageInfo.services.forEach(function(service) {
-      div.innerHTML += "<button type='button' onclick='open_select_config_dialog(\""+service.pkg+"\",\""+service.id+"\")'>"+service.name+"</button>";
+      template_create("template_dialog_select", null, dialog)
+          .html(service.name)
+          .attr("onclick", "open_select_config_dialog(\""+service.pkg+"\",\""+service.id+"\")");
     });
   }
-  div.innerHTML += "<button type='button' onclick='document.getElementById(\"dialog\").close()'>Cancel</button>";
+  template_create("template_dialog_select", null, dialog)
+      .html("Cancel")
+      .attr("onclick", "document.getElementById(\"dialog\").close()");
   document.getElementById("dialog").showModal();
 }
 
@@ -111,17 +114,22 @@ function open_select_config_dialog(pkg, sid) {
 }
 
 function handle_select_config_dialog(json) {
-  var div = document.getElementById("dialog_div");
-  div.innerHTML = "<h2 class='orangeContainer'>Configuration</h2>";  
+  var dialog = $("#dialog_div").empty();
+  
+  template_create("template_dialog_title", null, dialog)
+    .html("Configuration");
+  
   if(json.cfgs != null) {
     json.cfgs.forEach(function(config) {
-      div.innerHTML += "<button type='button' onclick='start_service(\""
-                       + config.pkg + "\",\"" + config.sid + "\",\"" + config.configName
-                       + "\")'>" + config.configName + "</button>";
+      template_create("template_dialog_select", null, dialog)
+          .html(config.configName)
+          .attr("onclick", "start_service(\"" + config.pkg + "\",\"" + config.sid + "\",\"" + config.configName + "\")");
     });
-    div.innerHTML += "<button type='button' onclick='document.getElementById(\"dialog\").close()'>Cancel</button>";
-    document.getElementById("dialog").showModal();
   }
+  template_create("template_dialog_select", null, dialog)
+      .html("Cancel")
+      .attr("onclick", "document.getElementById(\"dialog\").close()");
+  document.getElementById("dialog").showModal();
 }
 
 function start_service(pkg, sid, cfg) {
@@ -133,4 +141,15 @@ function handle_service_start(json) {
   if(json.instance != null) {
   	handle_running_instance(json.instance);
   }
+}
+
+function template_create(template_id, new_id, parent) {
+  var template = document.getElementById(template_id);
+  var copy = template.cloneNode(true);
+  copy.id=new_id;
+  if(parent != null) {
+	parent.append(copy);  
+  }
+  $(copy).show();
+  return $(copy);
 }

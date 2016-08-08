@@ -6,6 +6,7 @@
   </head>
 <body>
   <script src="js/rook.js"></script>
+  <script src="js/jquery-3.1.0.js"></script>
   <script src="routing.js"></script>
   <script>init()</script>
   
@@ -22,43 +23,41 @@
   
   <main>
     <item>
-      <ul>
-        <li>
-          <h2>tcp</h2>
-          <div id="tcp_running"></div>
-          <div class="contentParent">
-            <div class="contentLeft">
-              <button type="button" onclick='open_dialog("TCP", "open_tcp_router_dialog", "open_tcp_bridge_dialog")'>+</button>
-            </div>
-          </div>
-        </li>
-        <li>
-          <h2>aeron (experimental)</h2>
-          <div id="aeron_running"></div>
-          <div class="contentParent">
-            <div class="contentLeft">
-                <button type="button" onclick='open_dialog("Aeron", "open_aeron_router_dialog", "open_aeron_bridge_dialog")'>+</button>
-            </div>
-          </div>
-          </div>
-        </li>
-        <li>
-          <h2>mqtt (experimental)</h2>
-          <div id="mqtt_running"></div>
-          <div class="contentParent">
-            <div class="contentLeft">
-              <button type="button" onclick='open_dialog("MQTT", null, "open_mqtt_bridge_dialog")'>+</button>
-            </div>
-          </div>
-        </li>
-      </ul>
+      <div id="pkg_tcp">
+        <h2>tcp</h2>
+        <ul name="running"></ul>
+        <ul><li><button name="add_instance" type="button" onclick='open_dialog("TCP", "open_tcp_router_dialog", "open_tcp_bridge_dialog")'>+</button></li></ul>
+      </div>
+    </item>
+    <item>
+      <div id="pkg_aeron">
+        <h2>aeron (experimental)</h2>
+        <ul name="running"></ul>
+        <ul><li><button name="add_instance" type="button" onclick='open_dialog("Aeron", "open_aeron_router_dialog", "open_aeron_bridge_dialog")'>+</button></li></ul>
+      </div>
+    </item>
+    <item>
+      <div id="pkg_mqtt">
+        <h2>mqtt (experimental)</h2>
+        <ul name="running"></ul>
+        <ul><li><button name="add_instance" type="button" onclick='open_dialog("MQTT", null, "open_mqtt_bridge_dialog")'>+</button></li></ul>
+      </div>
     </item>
   </main>
   
+  <li id="template_instance" class="template">
+    <button name="stop" type='button'>Stop</button>
+    <button name="log_toggle" type='button'>Log</button>
+    <h4 name="name" class="inline">NAME</h4>
+  </li>
+  
+  <log id="template_log" class="template">
+    <textarea wrap="off" readonly name="log"></textarea>
+  </log>
+  
+  
   <dialog id="dialog">
-    <popup>
-      <div id="dialog_div"/>
-    </popup>
+    <div id="dialog_div"/>
   </dialog>
 
 </body>
