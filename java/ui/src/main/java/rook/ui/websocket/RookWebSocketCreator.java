@@ -13,6 +13,7 @@ import rook.ui.environment.Environment;
  * @author Eric Thill
  *
  */
+@Deprecated
 public class RookWebSocketCreator implements WebSocketCreator {
 
 	private final IOWebSocket io;

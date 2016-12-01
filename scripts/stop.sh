@@ -1,5 +1,5 @@
 #!/bin/bash
-PID=$(ps -ef | grep java | grep UILauncher | tr -s ' ' | cut -d ' ' -f 2)
+PID=$(pgrep -f rook.daemon.Daemon)
 if [[ -z $PID ]]; then
   echo "Nothing to kill"  
 else

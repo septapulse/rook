@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import rook.ui.environment.LogSender;
 import rook.ui.websocket.message.LogMessage;
 
+@Deprecated
 class WebSocketLogSender implements LogSender {
 	private final Gson logGson = new Gson();
 	private final Session s;

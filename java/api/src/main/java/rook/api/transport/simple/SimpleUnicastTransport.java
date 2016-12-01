@@ -1,5 +1,7 @@
 package rook.api.transport.simple;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import rook.api.RID;
 import rook.api.collections.AtomicCollection;
 import rook.api.collections.ThreadSafeCollection;
@@ -27,12 +29,15 @@ public class SimpleUnicastTransport implements UnicastTransport {
 	private final ThreadSafeCollection<ProxyUnicastMessageConsumer<GrowableBuffer>> incognitoMessageConsumers = new AtomicCollection<>();
 	private final RID serviceId;
 	private final Publisher publisher;
-
-	public SimpleUnicastTransport(RID serviceId, Publisher publisher, int defaultMessageCapacity) {
+	private final StartIncognitoListenConsumer startIncognitoListenConsumer;
+	private final AtomicBoolean incognitoListenStarted = new AtomicBoolean(false);
+	
+	public SimpleUnicastTransport(RID serviceId, Publisher publisher, StartIncognitoListenConsumer startIncognitoListenConsumer) {
 		this.serviceId = serviceId;
 		this.publisher = publisher;
+		this.startIncognitoListenConsumer = startIncognitoListenConsumer;
 	}
-
+	
 	@Override
 	public void addMessageConsumer(UnicastMessageConsumer<GrowableBuffer> consumer) {
 		messageConsumers.add( 
@@ -76,19 +81,28 @@ public class SimpleUnicastTransport implements UnicastTransport {
 
 	@Override
 	public void incognito_addMessageConsumer(UnicastMessageConsumer<GrowableBuffer> consumer) {
+		checkIncognitoListenStarted();
 		incognitoMessageConsumers.add(
 				new PassthroughUnicastMessageConsumer(consumer), false);
 	}
 
 	@Override
 	public <T> void incognito_addMessageConsumer(UnicastMessageConsumer<T> consumer, Deserializer<T> deserializer) {
+		checkIncognitoListenStarted();
 		incognitoMessageConsumers.add(
 				new DeserializingFilteringUnicastMessageConsumer<>(null, consumer, deserializer), false);
 	}
 
 	@Override
 	public <T> void incognito_removeMessageConsumer(UnicastMessageConsumer<T> consumer) {
+		checkIncognitoListenStarted();
 		incognitoMessageConsumers.removeIf(c -> c.getBaseConsumer() == consumer);
+	}
+	
+	private void checkIncognitoListenStarted() {
+		if(incognitoListenStarted.compareAndSet(false, true) && startIncognitoListenConsumer != null) {
+			startIncognitoListenConsumer.onStartIncognitoListen();
+		}
 	}
 
 	@Override

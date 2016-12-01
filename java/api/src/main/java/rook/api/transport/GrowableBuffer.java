@@ -1,6 +1,7 @@
 package rook.api.transport;
 
 import java.util.Arrays;
+import java.util.Base64;
 
 import org.agrona.ExpandableArrayBuffer;
 import org.agrona.MutableDirectBuffer;
@@ -188,13 +189,38 @@ public class GrowableBuffer {
 	}
 	@Override
 	public String toString() {
+		return "[ " + toHex() + " ]";
+	}
+	
+	public String toHex() {
 		char[] hex = new char[length * 2];
 		for (int i = 0; i < length; i++) {
 			int val = direct.getByte(i) & 0xFF;
 			hex[i * 2] = HEX[val >>> 4];
 			hex[i * 2 + 1] = HEX[val & 0x0F];
 		}
-		return "[ " + new String(hex) + " ]";
+		return new String(hex);
+	}
+	
+	public static GrowableBuffer fromHex(String hex) {
+		final int numBytes = hex.length() / 2;
+		GrowableBuffer b = GrowableBuffer.allocate(numBytes);
+		final int numChars = hex.length();
+		for (int i = 0; i < numChars; i += 2) {
+			b.bytes()[i
+					/ 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4) + Character.digit(hex.charAt(i + 1), 16));
+		}
+		b.length(numBytes);
+		return b;
+	}
+	
+	public String toBase64() {
+		return Base64.getEncoder().encodeToString(
+				Arrays.copyOf(bytes(), length()));
+	}
+	
+	public static GrowableBuffer fromBase64(String base64) {
+		return new GrowableBuffer(Base64.getDecoder().decode(base64));
 	}
 	
 }

@@ -45,19 +45,32 @@ public class FileUtil {
 			r.close();
 		}
 	}
+	
+	/**
+	 * Write a string to a file, overriding current contents
+	 * 
+	 * @param str
+	 * @param dest
+	 * @throws IOException
+	 */
+	public static void writeFully(String str, File dest) throws IOException {
+		FileWriter w = new FileWriter(dest);
+		w.write(str);
+		w.close();
+	}
 
 	/**
 	 * Recursively delete the given file/directory
 	 * 
 	 * @param file
 	 */
-	public static void delete(File file) {
+	public static boolean delete(File file) {
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
 				delete(f);
 			}
 		}
-		file.delete();
+		return file.delete();
 	}
 
 	/**

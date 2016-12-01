@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import rook.api.util.FileUtil;
 
+@Deprecated
 class ProcessContext {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final String pkg;

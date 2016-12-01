@@ -1,18 +1,13 @@
 #!/bin/bash
-PID=$(ps -ef | grep java | grep UILauncher | tr -s ' ' | cut -d ' ' -f 2)
+PID=$(pgrep -f rook.daemon.Daemon)
 if [[ -z $PID ]]; then
-  echo "Starting Rook"  
+  echo "Starting Rook Daemon"  
 else
   echo "Already Running"
   exit
 fi
 
-nohup java -cp "platform/ui/lib/*:platform/api/*" rook.ui.UILauncher \
-  --router-type rook.api.transport.tcp.TcpRouter \
-  --router-config "{}" \
-  --router-package "tcp" \
-  --transport-type rook.api.transport.tcp.TcpTransport \
-  --transport-config "{}" \
-  --html platform/ui/html \
-  --port 9000 \
-  &> ui.log &
+nohup java -cp "platform/daemon/*:platform/api/*" \
+  rook.daemon.Daemon \
+  8080 \
+  &> daemon.log &

@@ -18,6 +18,7 @@ import rook.core.io.proxy.IOProxy;
  * @author Eric Thill
  *
  */
+@Deprecated
 public class Environment {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());

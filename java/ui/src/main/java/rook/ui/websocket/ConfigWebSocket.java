@@ -22,6 +22,7 @@ import rook.ui.websocket.message.TemplateObject;
  * @author Eric Thill
  *
  */
+@Deprecated
 @WebSocket
 public class ConfigWebSocket {
 	private final Logger logger = LoggerFactory.getLogger(getClass());

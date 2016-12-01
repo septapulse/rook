@@ -26,6 +26,7 @@ import rook.ui.websocket.message.ServiceSupportInfo;
  * @author Eric Thill
  *
  */
+@Deprecated
 public class ServiceManager {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());

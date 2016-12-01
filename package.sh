@@ -61,6 +61,7 @@ echo "Copying Scripts"
 cd ${DIR}
 cp -f scripts/start.sh ${LOCAL_TARGET}/
 cp -f scripts/stop.sh ${LOCAL_TARGET}/
+cp -f scripts/cli.sh ${LOCAL_TARGET}/
 
 # Build rook/java
 echo "Building Java Platform"
@@ -70,6 +71,12 @@ echo "Replacing ${PLATFORM}"
 rm -rf ${PLATFORM}
 mkdir -p ${PLATFORM}
 cp -r target/rook-*-distribution/* ${PLATFORM}
+
+# Copy rook/html
+echo "Copying HTML"
+cd ${DIR}/html
+mkdir ${PLATFORM}/html
+cp -r * ${PLATFORM}/html/
 
 # Copy to remote
 if [[ -z $REMOTE_TARGET ]]; then

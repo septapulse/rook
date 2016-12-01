@@ -24,6 +24,7 @@ import rook.ui.websocket.RookWebSocketCreator;
  * @author Eric Thill
  *
  */
+@Deprecated
 public class UILauncher {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UILauncher.class);

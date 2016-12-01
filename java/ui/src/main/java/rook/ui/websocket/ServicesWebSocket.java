@@ -21,6 +21,7 @@ import rook.ui.websocket.message.ServiceResponse;
  * @author Eric Thill
  *
  */
+@Deprecated
 @WebSocket
 public class ServicesWebSocket {
 	private final Logger logger = LoggerFactory.getLogger(getClass());

@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 class LogReader {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final AtomicBoolean run = new AtomicBoolean(false);

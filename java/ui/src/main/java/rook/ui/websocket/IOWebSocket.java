@@ -30,6 +30,7 @@ import rook.ui.websocket.message.IOResponse;
  * @author Eric Thill
  *
  */
+@Deprecated
 @WebSocket
 public class IOWebSocket {
 

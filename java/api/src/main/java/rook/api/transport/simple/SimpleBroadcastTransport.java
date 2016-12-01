@@ -34,7 +34,7 @@ public class SimpleBroadcastTransport implements BroadcastTransport {
 	private final RID serviceId;
 	private final Publisher publisher;
 
-	public SimpleBroadcastTransport(RID serviceId, Publisher publisher, int defaultMessageCapacity) {
+	public SimpleBroadcastTransport(RID serviceId, Publisher publisher) {
 		this.serviceId = serviceId;
 		this.publisher = publisher;
 	}

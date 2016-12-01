@@ -14,6 +14,7 @@ import rook.api.util.FileUtil;
  * @author Eric Thill
  *
  */
+@Deprecated
 class ServiceClasspathUtil {
 
 	public static URLClassLoader load(File libDir) throws MalformedURLException {

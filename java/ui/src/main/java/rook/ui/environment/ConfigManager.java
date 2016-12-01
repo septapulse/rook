@@ -28,6 +28,7 @@ import rook.ui.websocket.message.TemplateObject;
  * @author Eric Thill
  *
  */
+@Deprecated
 public class ConfigManager {
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());

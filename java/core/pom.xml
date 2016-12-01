@@ -20,6 +20,10 @@
 	</developers>
 
 	<modules>
+		<module>transport-aeron</module>
+		<module>transport-mqtt</module>
+		<module>transport-tcp</module>
+		<module>transport-websocket</module>
 		<module>io-proxy</module>
 		<module>io-service</module>
 	 </modules>

@@ -23,6 +23,7 @@ import rook.ui.websocket.message.ProcessRunInfo;
  * @author Eric Thill
  *
  */
+@Deprecated
 @WebSocket
 public class RuntimeWebSocket {
 	private final Logger logger = LoggerFactory.getLogger(getClass());

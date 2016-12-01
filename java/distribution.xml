@@ -5,18 +5,40 @@
 		<format>dir</format>
 	</formats>
 	<baseDirectory>.</baseDirectory>
+	<files>
+		<file>
+			<source>core/transport-aeron/target/transport-aeron-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>core/transport-mqtt/target/transport-mqtt-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>core/transport-tcp/target/transport-tcp-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>core/transport-websocket/target/transport-websocket-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>core/io-service/target/io-service-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>cli/target/rook-cli.jar</source>
+			<outputDirectory>/cli/</outputDirectory>
+		</file>
+	</files>
 	<fileSets>
 		<fileSet>
 			<directory>api/target/api-distribution/</directory>
 			<outputDirectory>/api/</outputDirectory>
 		</fileSet>
 		<fileSet>
-			<directory>ui/target/ui-distribution/</directory>
-			<outputDirectory>/ui/</outputDirectory>
-		</fileSet>
-		<fileSet>
-			<directory>core/io-service/target/io-service-distribution</directory>
-			<outputDirectory>/services/java/core-io/</outputDirectory>
+			<directory>daemon/target/daemon-distribution/</directory>
+			<outputDirectory>/daemon/</outputDirectory>
 		</fileSet>
 		
 		<fileSet>

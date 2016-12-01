@@ -8,6 +8,7 @@ import java.io.IOException;
  * @author Eric Thill
  *
  */
+@Deprecated
 public interface LogSender {
 	/**
 	 * Dispatch another line of the log

@@ -16,8 +16,10 @@
 
 	<modules>
 		<module>api</module>
+		<module>test-util</module>
 		<module>core</module>
-		<module>ui</module>
+		<module>cli</module>
+		<module>daemon</module>
 		<module>examples</module>
 	</modules>
 

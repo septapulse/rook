@@ -1,0 +1,31 @@
+popup button {
+  background: #585858;
+  padding: 5px 20px;
+  border: 0;
+  border-radius: 5px;
+  color: #ffffff;
+  text-decoration: none;
+  width: 100%;
+}
+popup button:hover {
+  background: #ff5800;
+}
+popup button:active {
+  background: #ff5800;
+}
+popup h1, popup h2 {
+  color: #ffffff;
+  margin: 3px 3px;
+}
+popup h3, popup h4 {
+  color: #ffffff;
+  margin: 3px 3px;
+}
+popup input {
+  color: #ffffff;
+  background: #373737;
+  border-radius: 5px;
+  border: none;
+  width: 75%;
+  text-align: center;
+}
