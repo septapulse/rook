@@ -1,23 +1,23 @@
-package rook.daemon.packages;
+package rook.cli.message.pkg;
 
 import java.util.Collection;
 
 import com.google.gson.Gson;
 
-import rook.daemon.common.Result;
+import rook.cli.message.Result;
 
-public class PackageManagerResponse {
+public class PackageResponse {
 
-	private MessageType type;
+	private PackageMessageType type;
 	private Result result;
 	private PackageInfo pkg;
 	private Collection<PackageInfo> packages;
 
-	public MessageType getType() {
+	public PackageMessageType getType() {
 		return type;
 	}
 
-	public PackageManagerResponse setType(MessageType type) {
+	public PackageResponse setType(PackageMessageType type) {
 		this.type = type;
 		return this;
 	}
@@ -26,7 +26,7 @@ public class PackageManagerResponse {
 		return result;
 	}
 	
-	public PackageManagerResponse setResult(Result result) {
+	public PackageResponse setResult(Result result) {
 		this.result = result;
 		return this;
 	}
@@ -35,7 +35,7 @@ public class PackageManagerResponse {
 		return pkg;
 	}
 	
-	public PackageManagerResponse setPackage(PackageInfo pkg) {
+	public PackageResponse setPackage(PackageInfo pkg) {
 		this.pkg = pkg;
 		return this;
 	}
@@ -44,7 +44,7 @@ public class PackageManagerResponse {
 		return packages;
 	}
 	
-	public PackageManagerResponse setPackages(Collection<PackageInfo> packages) {
+	public PackageResponse setPackages(Collection<PackageInfo> packages) {
 		this.packages = packages;
 		return this;
 	}

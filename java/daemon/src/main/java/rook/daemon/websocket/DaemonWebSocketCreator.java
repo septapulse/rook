@@ -1,4 +1,4 @@
-package rook.daemon;
+package rook.daemon.websocket;
 
 import java.io.File;
 
@@ -7,7 +7,6 @@ import org.eclipse.jetty.websocket.servlet.ServletUpgradeResponse;
 import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
 
 import rook.core.transport.websocket.WebsocketRouter;
-import rook.daemon.packages.PackageManager;
 
 public class DaemonWebSocketCreator implements WebSocketCreator {
 

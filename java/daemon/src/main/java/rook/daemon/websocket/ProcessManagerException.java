@@ -1,4 +1,4 @@
-package rook.daemon.processes;
+package rook.daemon.websocket;
 
 public class ProcessManagerException extends Exception {
 

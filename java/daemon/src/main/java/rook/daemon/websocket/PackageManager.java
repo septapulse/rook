@@ -1,4 +1,4 @@
-package rook.daemon.packages;
+package rook.daemon.websocket;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,7 +20,11 @@ import com.google.gson.Gson;
 
 import rook.api.transport.GrowableBuffer;
 import rook.api.util.FileUtil;
-import rook.daemon.common.Result;
+import rook.cli.message.Result;
+import rook.cli.message.pkg.PackageMessageType;
+import rook.cli.message.pkg.PackageInfo;
+import rook.cli.message.pkg.PackageRequest;
+import rook.cli.message.pkg.PackageResponse;
 
 @WebSocket
 public class PackageManager {
@@ -51,14 +55,14 @@ public class PackageManager {
 	
 	@OnWebSocketMessage
 	public void onText(Session session, String message) throws IOException {
-		PackageManagerRequest req = gson.fromJson(message, PackageManagerRequest.class);
+		PackageRequest req = gson.fromJson(message, PackageRequest.class);
 		Result result;
 		switch (req.getType()) {
 		case LIST:
 			Collection<PackageInfo> packages = getPackages();
 			result = new Result().setSuccess(packages != null);
-			send(session, new PackageManagerResponse()
-					.setType(MessageType.LIST)
+			send(session, new PackageResponse()
+					.setType(PackageMessageType.LIST)
 					.setResult(result)
 					.setPackages(packages));
 			break;
@@ -68,35 +72,35 @@ public class PackageManager {
 			if(pkg == null) {
 				result.setError("Package '" + req.getId() + "' does not exist");
 			}
-			send(session, new PackageManagerResponse()
-					.setType(MessageType.LIST)
+			send(session, new PackageResponse()
+					.setType(PackageMessageType.LIST)
 					.setResult(result)
 					.setPackage(pkg));
 			break;
 		case ADD:
 			result = addPackage(req.getId(), 
 					Base64.getDecoder().decode(req.getData()));
-			send(session, new PackageManagerResponse()
-					.setType(MessageType.ADD)
+			send(session, new PackageResponse()
+					.setType(PackageMessageType.ADD)
 					.setResult(result));
 			break;
 		case REMOVE:
 			result = removePackage(req.getId());
-			send(session, new PackageManagerResponse()
-					.setType(MessageType.REFRESH)
+			send(session, new PackageResponse()
+					.setType(PackageMessageType.REFRESH)
 					.setResult(result));
 			break;
 		case REFRESH:
 			refresh();
 			result = new Result().setSuccess(true);
-			send(session, new PackageManagerResponse()
-					.setType(MessageType.REFRESH)
+			send(session, new PackageResponse()
+					.setType(PackageMessageType.REFRESH)
 					.setResult(result));
 			break;
 		}
 	}
 
-	private void send(Session session, PackageManagerResponse m) {
+	private void send(Session session, PackageResponse m) {
 		try {
 			session.getRemote().sendString(gson.toJson(m));
 		} catch (IOException e) {
@@ -207,7 +211,7 @@ public class PackageManager {
 				String md5new = GrowableBuffer.copyFrom(md5digest.digest(FileUtil.readFully(f).getBytes())).toHex();
 				File md5file = new File(dir, id+MD5_SUFFIX);
 				boolean update = false;
-				if(md5file.exists()) {
+				if(!md5file.exists()) {
 					logger.info("Adding new package '" + id + "'");
 					update = true;
 				} else if(!md5new.equals(FileUtil.readFully(md5file))) {

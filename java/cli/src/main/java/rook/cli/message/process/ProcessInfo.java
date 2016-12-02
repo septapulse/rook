@@ -1,4 +1,4 @@
-package rook.daemon.processes;
+package rook.cli.message.process;
 
 import com.google.gson.Gson;
 

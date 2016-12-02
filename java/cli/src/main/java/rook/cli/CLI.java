@@ -6,23 +6,49 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
+
+import com.google.gson.Gson;
+
+import rook.cli.message.pkg.PackageInfo;
+import rook.cli.message.pkg.PackageMessageType;
+import rook.cli.message.pkg.PackageRequest;
+import rook.cli.message.pkg.PackageResponse;
+import rook.cli.message.pkg.ServiceInfo;
+import rook.cli.message.process.ProcessMessageType;
+import rook.cli.message.process.ProcessInfo;
+import rook.cli.message.process.ProcessRequest;
+import rook.cli.message.process.ProcessResponse;
 
 public class CLI implements Runnable {
+
+	private static final int CONNECT_TIMEOUT_SECONDS = 3;
 	
 	public static void main(String[] args) {
 		if(args.length != 1) {
-			System.out.println("Format: CLI <ws>");
+			System.out.println("Format: CLI <url>");
 			System.exit(1);
 		}
 		String ws = args[0];
 		new CLI(ws, new BufferedReader(new InputStreamReader(System.in)), System.out).run();
+		System.exit(0);
 	}
 
+	private final String url;
 	private final BufferedReader clin;
 	private final PrintStream clout;
+	private final Gson gson = new Gson();
 	
-	public CLI(String ws, BufferedReader clin, PrintStream clout) {
+	public CLI(String url, BufferedReader clin, PrintStream clout) {
+		this.url = url;
 		this.clin = clin;
 		this.clout = clout;
 	}
@@ -57,13 +83,6 @@ public class CLI implements Runnable {
 				}
 			} catch(ArrayIndexOutOfBoundsException e) {
 				clout.println("ERROR: Could not parse. Wrong number of arguments provided.");
-			} catch(IOException e) {
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				clout.println(sw.toString());
-				clout.println("Encountered IOException. Exiting...");
-				break;
 			} catch(Throwable t) {
 				StringWriter sw = new StringWriter();
 				PrintWriter pw = new PrintWriter(sw);
@@ -98,7 +117,7 @@ public class CLI implements Runnable {
 				+ "\n  exit";
 	}
 	
-	private String process(String[] params) {
+	private String process(String[] params) throws IOException {
 		switch(params[0]) {
 		case "STATUS":
 			return processStatus();
@@ -117,37 +136,87 @@ public class CLI implements Runnable {
 		}
 	}
 
-	private String processStatus() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private String processStart(String packageId, String serviceId, String[] params) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private String processStop(String processId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private String processStopForcibly(String processId) {
-		// TODO Auto-generated method stub
-		return null;
+	private String processStatus() throws IOException {
+		ProcessResponse resp = send(new ProcessRequest()
+				.setType(ProcessMessageType.STATUS));
+		if(resp.getResult().getSuccess()) {
+			StringBuilder sb = new StringBuilder();
+			for(ProcessInfo p : resp.getProcesses()) {
+				sb.append(parseProcessInfo(p)).append("\n");
+			}
+			return sb.toString();
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
 	}
 	
-	private String processClean(String processId) {
-		// TODO Auto-generated method stub
-		return null;
+	private String processStart(String packageId, String serviceId, String[] params) throws IOException {
+		ProcessResponse resp = send(new ProcessRequest()
+				.setType(ProcessMessageType.START)
+				.setPackage(packageId)
+				.setService(serviceId)
+				.setArguments(params));
+		if(resp.getResult().getSuccess()) {
+			return parseProcessInfo(resp.getProcess());
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
 	}
 
-	private String processLog(String processId) {
-		// TODO Auto-generated method stub
-		return null;
+	private String processStop(String processId) throws IOException {
+		ProcessResponse resp = send(new ProcessRequest()
+				.setType(ProcessMessageType.STOP)
+				.setId(processId));
+		if(resp.getResult().getSuccess()) {
+			return "Stop Executed";
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
 	}
 
-	private String pkg(String[] params) {
+	private String processStopForcibly(String processId) throws IOException {
+		ProcessResponse resp = send(new ProcessRequest()
+				.setType(ProcessMessageType.STOP_FORCIBLY)
+				.setId(processId));
+		if(resp.getResult().getSuccess()) {
+			return "Stop Forcibly Executed";
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+	
+	private String processClean(String processId) throws IOException {
+		ProcessResponse resp = send(new ProcessRequest()
+				.setType(ProcessMessageType.CLEAN)
+				.setId(processId));
+		if(resp.getResult().getSuccess()) {
+			return "Clean Executed";
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+
+	private String processLog(String processId) throws IOException {
+		ProcessResponse resp = send(new ProcessRequest()
+				.setType(ProcessMessageType.LOG)
+				.setId(processId));
+		if(resp.getResult().getSuccess()) {
+			return resp.getLog();
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+	
+	private String parseProcessInfo(ProcessInfo p) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(p.getId())
+				.append("    ").append(p.getPackageName())
+				.append("    ").append(p.getServiceName());
+		return sb.toString();
+	}
+
+
+	private String pkg(String[] params) throws IOException {
 		switch(params[0]) {
 		case "LIST":
 			return pkgList();
@@ -164,28 +233,109 @@ public class CLI implements Runnable {
 		}
 	}
 
-	private String pkgList() {
-		// TODO Auto-generated method stub
-		return null;
+	private String pkgList() throws IOException {
+		PackageResponse resp = send(new PackageRequest()
+				.setType(PackageMessageType.LIST));
+		if(resp.getResult().getSuccess()) {
+			StringBuilder sb = new StringBuilder();
+			for(PackageInfo p : resp.getPackages()) {
+				sb.append(parsePackageInfo(p)).append("\n");
+			}
+			return sb.toString();
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
 	}
 
-	private String pkgGet(String packageId) {
-		// TODO Auto-generated method stub
-		return null;
+	private String pkgGet(String packageId) throws IOException {
+		PackageResponse resp = send(new PackageRequest()
+				.setType(PackageMessageType.GET)
+				.setId(packageId));
+		if(resp.getResult().getSuccess()) {
+			return parsePackageInfo(resp.getPackage());
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
 	}
 
-	private String pkgAdd(String packageId, String pathToZip) {
-		// TODO Auto-generated method stub
-		return null;
+	private String pkgAdd(String packageId, String pathToZip) throws IOException {
+		byte[] dataBytes = readFile(pathToZip);
+		String data = Base64.getEncoder().encodeToString(dataBytes);
+		PackageResponse resp = send(new PackageRequest()
+				.setType(PackageMessageType.ADD)
+				.setId(packageId)
+				.setData(data));
+		if(resp.getResult().getSuccess()) {
+			return "Added " + packageId;
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
 	}
 
-	private String pkgRemove(String packageId) {
-		// TODO Auto-generated method stub
-		return null;
+	private byte[] readFile(String pathToZip) throws IOException {
+		// FIXME
+		return new byte[0];
 	}
 
-	private String pkgRefresh() {
-		// TODO Auto-generated method stub
-		return null;
+	private String pkgRemove(String packageId) throws IOException {
+		PackageResponse resp = send(new PackageRequest()
+				.setType(PackageMessageType.REMOVE)
+				.setId(packageId));
+		if(resp.getResult().getSuccess()) {
+			return "Removed " + packageId;
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+
+	private String pkgRefresh() throws IOException {
+		PackageResponse resp = send(new PackageRequest()
+				.setType(PackageMessageType.REFRESH));
+		if(resp.getResult().getSuccess()) {
+			return "I'm Feeling Refreshed";
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+	
+	private String parsePackageInfo(PackageInfo p) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(p.getId()).append(": ").append(p.getName()).append("\n");
+		for(ServiceInfo s : p.getServices().values()) {
+			sb.append("  ").append(s.getId()).append(": ").append(s.getName()).append("\n");
+		}
+		sb.setLength(sb.length()-1);
+		return sb.toString();
+	}
+	
+	private ProcessResponse send(ProcessRequest request) throws IOException {
+		String json = send("PROCESS", gson.toJson(request));
+		return gson.fromJson(json, ProcessResponse.class);
+	}
+	
+	private PackageResponse send(PackageRequest request) throws IOException {
+		String json = send("PACKAGE", gson.toJson(request));
+		return gson.fromJson(json, PackageResponse.class);
+	}
+	
+	private String send(String protocol, String json) throws IOException {
+		try {
+			RequestResponseWebSocket socket = new RequestResponseWebSocket(json);
+			WebSocketClient client = new WebSocketClient();
+	        client.start();
+	        URI url = new URI(this.url);
+	        ClientUpgradeRequest request = new ClientUpgradeRequest();
+	        request.setSubProtocols(protocol);
+	        Future<Session> connectFuture = client.connect(socket,url,request);
+	        Session session = connectFuture.get(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+	        if(session == null) {
+	        	throw new IOException("Could not connect to " + url);
+	        }
+	        return socket.getResponse().get();
+		} catch(IOException e) {
+			throw e;
+		} catch(Throwable t) {
+			throw new IOException("Could not send " + json, t);
+		}
 	}
 }

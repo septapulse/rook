@@ -15,13 +15,66 @@
   background: #878787;
 }
 
-
 body {
   color: #ffffff;
   background-color: #373737;
   text-align: center;
   font-family: "Palatino Linotype", "Palatino", "serif";
 }
+
+module {
+  background: #585858;
+}
+module div {
+  text-align: left;
+}
+module button {
+  background: #585858;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  text-decoration: none;
+}
+module button:hover {
+  background: #ff5800;
+}
+module button:active {
+  background: #ff5800;
+}
+module button:focus {
+  outline-color: #ff5800;
+}
+
+.spaced {
+  letter-spacing: 4px;
+  color: #ffffff;
+  background-color: #373737;
+}
+.spacedColor {
+  letter-spacing: 4px;
+  color: #ff5800;
+  background-color: #373737;  
+}
+.template {
+  display: none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 nav {
   background-color: #373737;
@@ -170,19 +223,6 @@ log textarea {
 }
 
 
-.spaced {
-  letter-spacing: 4px;
-  color: #ffffff;
-  background-color: #373737;
-}
-.spacedColor {
-  letter-spacing: 4px;
-  color: #ff5800;
-  background-color: #373737;  
-}
-.template {
-  display: none;
-}
 .inline {
   display: inline;
 }

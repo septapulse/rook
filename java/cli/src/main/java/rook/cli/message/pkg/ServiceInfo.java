@@ -1,4 +1,4 @@
-package rook.daemon.packages;
+package rook.cli.message.pkg;
 
 import java.util.Map;
 

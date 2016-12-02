@@ -1,4 +1,4 @@
-package rook.daemon.processes;
+package rook.daemon.websocket;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,10 +19,13 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 
 import rook.api.util.FileUtil;
-import rook.daemon.common.Result;
-import rook.daemon.packages.PackageInfo;
-import rook.daemon.packages.PackageManager;
-import rook.daemon.packages.ServiceInfo;
+import rook.cli.message.Result;
+import rook.cli.message.pkg.PackageInfo;
+import rook.cli.message.pkg.ServiceInfo;
+import rook.cli.message.process.ProcessMessageType;
+import rook.cli.message.process.ProcessInfo;
+import rook.cli.message.process.ProcessRequest;
+import rook.cli.message.process.ProcessResponse;
 
 @WebSocket
 public class ProcessManager {
@@ -48,7 +51,7 @@ public class ProcessManager {
 	
 	@OnWebSocketMessage
 	public void onText(Session session, String message) throws IOException {
-		ProcessManagerRequest req = gson.fromJson(message, ProcessManagerRequest.class);
+		ProcessRequest req = gson.fromJson(message, ProcessRequest.class);
 		boolean success;
 		ProcessInfo processInfo;
 		List<ProcessInfo> processes;
@@ -57,42 +60,42 @@ public class ProcessManager {
 			case STATUS:
 				processes = getProcesses();
 				success = processes != null;
-				send(session, new ProcessManagerResponse()
-						.setType(MessageType.STATUS)
+				send(session, new ProcessResponse()
+						.setType(ProcessMessageType.STATUS)
 						.setResult(new Result().setSuccess(success))
 						.setProcesses(processes));
 				break;
 			case START:
 				processInfo = start(req.getPackage(), req.getService(), req.getArguments());
 				success = processInfo != null;
-				send(session, new ProcessManagerResponse()
-						.setType(MessageType.START)
+				send(session, new ProcessResponse()
+						.setType(ProcessMessageType.START)
 						.setResult(new Result().setSuccess(success))
 						.setProcess(processInfo));
 				break;
 			case STOP:
 				success = stop(req.getId(), false);
-				send(session, new ProcessManagerResponse()
-						.setType(MessageType.STOP)
+				send(session, new ProcessResponse()
+						.setType(ProcessMessageType.STOP)
 						.setResult(new Result().setSuccess(success)));
 				break;
 			case STOP_FORCIBLY:
 				success = stop(req.getId(), true);
-				send(session, new ProcessManagerResponse()
-						.setType(MessageType.STOP_FORCIBLY)
+				send(session, new ProcessResponse()
+						.setType(ProcessMessageType.STOP_FORCIBLY)
 						.setResult(new Result().setSuccess(success)));
 				break;
 			case CLEAN:
 				success = clean(req.getId());
-				send(session, new ProcessManagerResponse()
-						.setType(MessageType.CLEAN)
+				send(session, new ProcessResponse()
+						.setType(ProcessMessageType.CLEAN)
 						.setResult(new Result().setSuccess(success)));
 				break;
 			case LOG:
 				String log = getLog(req.getId());
 				success = log != null;
-				send(session, new ProcessManagerResponse()
-						.setType(MessageType.LOG)
+				send(session, new ProcessResponse()
+						.setType(ProcessMessageType.LOG)
 						.setResult(new Result().setSuccess(success))
 						.setLog(log));
 				break;
@@ -104,7 +107,7 @@ public class ProcessManager {
 			}
 		} catch(ProcessManagerException e) {
 			Result result = new Result().setSuccess(false).setError(e);
-			send(session, new ProcessManagerResponse()
+			send(session, new ProcessResponse()
 					.setType(req.getType())
 					.setResult(result));
 		}
@@ -259,7 +262,7 @@ public class ProcessManager {
 		throw new ProcessManagerException("No process with id " + id);
 	}
 
-	private void send(Session session, ProcessManagerResponse m) {
+	private void send(Session session, ProcessResponse m) {
 		try {
 			session.getRemote().sendString(gson.toJson(m));
 		} catch (IOException e) {

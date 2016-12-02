@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rook.api.exception.InitException;
+import rook.daemon.websocket.DaemonWebSocketCreator;
 
 public class Daemon {
 

@@ -1,4 +1,4 @@
-package rook.daemon.common;
+package rook.cli.message;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

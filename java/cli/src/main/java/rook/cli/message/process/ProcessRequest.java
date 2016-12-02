@@ -1,20 +1,20 @@
-package rook.daemon.processes;
+package rook.cli.message.process;
 
 import com.google.gson.Gson;
 
-public class ProcessManagerRequest {
+public class ProcessRequest {
 
-	private MessageType type;
+	private ProcessMessageType type;
 	private String id;
 	private String pkg;
 	private String service;
 	private String[] arguments;
 	
-	public MessageType getType() {
+	public ProcessMessageType getType() {
 		return type;
 	}
 
-	public ProcessManagerRequest setType(MessageType type) {
+	public ProcessRequest setType(ProcessMessageType type) {
 		this.type = type;
 		return this;
 	}
@@ -23,7 +23,7 @@ public class ProcessManagerRequest {
 		return id;
 	}
 	
-	public ProcessManagerRequest setId(String id) {
+	public ProcessRequest setId(String id) {
 		this.id = id;
 		return this;
 	}
@@ -32,7 +32,7 @@ public class ProcessManagerRequest {
 		return pkg;
 	}
 	
-	public ProcessManagerRequest setPackage(String pkg) {
+	public ProcessRequest setPackage(String pkg) {
 		this.pkg = pkg;
 		return this;
 	}
@@ -41,7 +41,7 @@ public class ProcessManagerRequest {
 		return service;
 	}
 	
-	public ProcessManagerRequest setService(String service) {
+	public ProcessRequest setService(String service) {
 		this.service = service;
 		return this;
 	}
@@ -50,7 +50,7 @@ public class ProcessManagerRequest {
 		return arguments;
 	}
 	
-	public ProcessManagerRequest setArguments(String[] arguments) {
+	public ProcessRequest setArguments(String[] arguments) {
 		this.arguments = arguments;
 		return this;
 	}

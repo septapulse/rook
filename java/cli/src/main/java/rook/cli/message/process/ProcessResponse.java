@@ -1,24 +1,24 @@
-package rook.daemon.processes;
+package rook.cli.message.process;
 
 import java.util.Collection;
 
 import com.google.gson.Gson;
 
-import rook.daemon.common.Result;
+import rook.cli.message.Result;
 
-public class ProcessManagerResponse {
+public class ProcessResponse {
 
-	private MessageType type;
+	private ProcessMessageType type;
 	private Result result;
 	private ProcessInfo process;
 	private Collection<ProcessInfo> processes;
 	private String log;
 
-	public MessageType getType() {
+	public ProcessMessageType getType() {
 		return type;
 	}
 
-	public ProcessManagerResponse setType(MessageType type) {
+	public ProcessResponse setType(ProcessMessageType type) {
 		this.type = type;
 		return this;
 	}
@@ -27,7 +27,7 @@ public class ProcessManagerResponse {
 		return result;
 	}
 	
-	public ProcessManagerResponse setResult(Result result) {
+	public ProcessResponse setResult(Result result) {
 		this.result = result;
 		return this;
 	}
@@ -36,7 +36,7 @@ public class ProcessManagerResponse {
 		return process;
 	}
 	
-	public ProcessManagerResponse setProcess(ProcessInfo process) {
+	public ProcessResponse setProcess(ProcessInfo process) {
 		this.process = process;
 		return this;
 	}
@@ -45,7 +45,7 @@ public class ProcessManagerResponse {
 		return processes;
 	}
 	
-	public ProcessManagerResponse setProcesses(Collection<ProcessInfo> processes) {
+	public ProcessResponse setProcesses(Collection<ProcessInfo> processes) {
 		this.processes = processes;
 		return this;
 	}
@@ -54,7 +54,7 @@ public class ProcessManagerResponse {
 		return log;
 	}
 	
-	public ProcessManagerResponse setLog(String log) {
+	public ProcessResponse setLog(String log) {
 		this.log = log;
 		return this;
 	}

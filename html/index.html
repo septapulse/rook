@@ -1,27 +1,32 @@
 <!doctype html public "-//IETF//DTD HTML 2.0//EN">
 <html>
-  <head>
-    <title>Rook - Robotics Orchestration Kit</title>
-    <link rel="stylesheet" type="text/css" href="rook.css">
-  </head>
-<body>
-  <script src="js/rook.js"></script>
-  
-  <div><p class="spaced">
-    <mark class="spacedColor">Ro</mark>botics <mark class="spacedColor">O</mark>rchestration <mark class="spacedColor">K</mark>it
-  </p></div>
-
-  <nav>
-    <a href="./index.html"><button style="background-color: #ff5800">Home</button></a>
-    <a href="./routing.html"><button>Routing</button></a>
-    <a href="./services.html"><button>Services</button></a>
-    <a href="./sensors.html"><button>Sensors</button></a>
-  </nav>
-  
-  <main>
-    <h1>Rook</h2>
-    <h4>Version: 0.1.0-SNAPSHOT</h4>
-  </main>
-
-</body>
+	<head>
+		<title>Rook - Robotics Orchestration Kit</title>
+		<link rel="stylesheet" type="text/css" href="rook.css">
+	</head>
+	<body>
+		<script src="js/jquery-3.1.0.js"></script>
+		<script src="index.js"></script>
+		<script>init()</script>
+		
+		<div>
+			<p class="spaced">
+				<mark class="spacedColor">Ro</mark>botics <mark class="spacedColor">O</mark>rchestration <mark class="spacedColor">K</mark>it
+			</p>
+		</div>
+		
+		<module id="template_module" class="template">
+			<button name="button" style="margin-bottom:24px;">
+				<div style="min-width:512px;max-width:50%;">
+					<div style="width:128px;float:left;">
+						<img name="image" height="128px" width="128px" src=""/>
+					</div>
+					<div style="height:128px;line-height:128px;">
+						<h1 name="name" style="padding-left:150px;margin-top:0px;">MODULE</h1>
+					</div>
+				</div>
+			</button>
+		</module>
+	
+	</body>
 </html>

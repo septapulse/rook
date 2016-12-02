@@ -1,5 +1,6 @@
-package rook.daemon.packages;
+package rook.cli.message.pkg;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,6 +30,9 @@ public class PackageInfo {
 	}
 	
 	public Map<String, ServiceInfo> getServices() {
+		if(services == null) {
+			return Collections.emptyMap();
+		}
 		return services;
 	}
 	

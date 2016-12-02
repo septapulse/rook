@@ -1,18 +1,18 @@
-package rook.daemon.packages;
+package rook.cli.message.pkg;
 
 import com.google.gson.Gson;
 
-public class PackageManagerRequest {
+public class PackageRequest {
 
-	private MessageType type;
+	private PackageMessageType type;
 	private String id;
 	private String data;
 
-	public MessageType getType() {
+	public PackageMessageType getType() {
 		return type;
 	}
 
-	public PackageManagerRequest setType(MessageType type) {
+	public PackageRequest setType(PackageMessageType type) {
 		this.type = type;
 		return this;
 	}
@@ -21,7 +21,7 @@ public class PackageManagerRequest {
 		return id;
 	}
 
-	public PackageManagerRequest setId(String id) {
+	public PackageRequest setId(String id) {
 		this.id = id;
 		return this;
 	}
@@ -30,7 +30,7 @@ public class PackageManagerRequest {
 		return data;
 	}
 
-	public PackageManagerRequest setData(String data) {
+	public PackageRequest setData(String data) {
 		this.data = data;
 		return this;
 	}
