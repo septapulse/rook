@@ -28,17 +28,17 @@
 		</file>
 		<file>
 			<source>cli/target/rook-cli.jar</source>
-			<outputDirectory>/cli/</outputDirectory>
+			<outputDirectory>/cli/java/</outputDirectory>
 		</file>
 	</files>
 	<fileSets>
 		<fileSet>
 			<directory>api/target/api-distribution/</directory>
-			<outputDirectory>/api/</outputDirectory>
+			<outputDirectory>/api/java/</outputDirectory>
 		</fileSet>
 		<fileSet>
 			<directory>daemon/target/daemon-distribution/</directory>
-			<outputDirectory>/daemon/</outputDirectory>
+			<outputDirectory>/daemon/java/</outputDirectory>
 		</fileSet>
 		
 		<fileSet>

@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>daemon</artifactId>
-	
+
 	<developers>
 		<developer>
 			<name>Eric Thill</name>
@@ -39,27 +39,29 @@
 			<version>9.3.7.v20160115</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.eclipse.jetty.websocket</groupId>
-		    <artifactId>websocket-server</artifactId>
-		    <version>9.3.7.v20160115</version>
+			<groupId>org.eclipse.jetty.websocket</groupId>
+			<artifactId>websocket-server</artifactId>
+			<version>9.3.7.v20160115</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>2.5</version>
 		</dependency>
-
+		<dependency>
+			<groupId>net.lingala.zip4j</groupId>
+			<artifactId>zip4j</artifactId>
+			<version>1.3.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.12</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>rook</groupId>
 			<artifactId>api</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

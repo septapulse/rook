@@ -142,7 +142,7 @@ public class ProcessManager {
 		PackageInfo packageInfo = null;
 		for(File packagesDir : packageDirs) {
 			File packageDir = new File(packagesDir, pkg);
-			File packageFile = new File(packageDir, PackageManager.ROOK_CFG_FILENAME);
+			File packageFile = new File(packageDir, ZipManager.ROOK_CFG_FILENAME);
 			if(packageFile.exists()) {
 				try {
 					packageInfo = gson.fromJson(FileUtil.readFully(packageFile), PackageInfo.class);

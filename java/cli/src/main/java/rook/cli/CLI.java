@@ -23,10 +23,14 @@ import rook.cli.message.pkg.PackageMessageType;
 import rook.cli.message.pkg.PackageRequest;
 import rook.cli.message.pkg.PackageResponse;
 import rook.cli.message.pkg.ServiceInfo;
-import rook.cli.message.process.ProcessMessageType;
 import rook.cli.message.process.ProcessInfo;
+import rook.cli.message.process.ProcessMessageType;
 import rook.cli.message.process.ProcessRequest;
 import rook.cli.message.process.ProcessResponse;
+import rook.cli.message.ui.UiInfo;
+import rook.cli.message.ui.UiMessageType;
+import rook.cli.message.ui.UiRequest;
+import rook.cli.message.ui.UiResponse;
 
 public class CLI implements Runnable {
 
@@ -76,6 +80,9 @@ public class CLI implements Runnable {
 					case "CONFIG":
 						clout.println("CONFIG commands are not supported quite yet");
 						break;
+					case "UI":
+						clout.println(ui(Arrays.copyOfRange(cmd, 1, cmd.length)));
+						break;
 					default:
 						clout.println(cmd[0] + " is not a recognized command type");
 						break;
@@ -100,7 +107,7 @@ public class CLI implements Runnable {
 		return "commands:"
 				+ "\n  PACKAGE LIST"
 				+ "\n  PACKAGE GET <package_id>"
-				+ "\n  PACKAGE ADD <package_id> <path_to_zip_file>"
+				+ "\n  PACKAGE ADD <path_to_zip_file>"
 				+ "\n  PACKAGE REMOVE <package_id>"
 				+ "\n  PACKAGE REFRESH"
 				+ "\n  PROCESS STATUS"
@@ -113,6 +120,10 @@ public class CLI implements Runnable {
 				+ "\n  CONFIG GET <package_id> <service_id> <config_name>"
 				+ "\n  CONFIG UPLOAD <package_id> <service_id> <config_name> <path_to_config_file>"
 				+ "\n  CONFIG REMOVE <package_id> <service_id> <config_name>"
+				+ "\n  UI LIST"
+				+ "\n  UI GET <ui_id>"
+				+ "\n  UI ADD <path_to_zip_file>"
+				+ "\n  UI REMOVE <ui_id>"
 				+ "\n  help"
 				+ "\n  exit";
 	}
@@ -223,7 +234,7 @@ public class CLI implements Runnable {
 		case "GET":
 			return pkgGet(params[1]);
 		case "ADD":
-			return pkgAdd(params[1], params[2]);
+			return pkgAdd(params[1]);
 		case "REMOVE":
 			return pkgRemove(params[1]);
 		case "REFRESH":
@@ -258,15 +269,14 @@ public class CLI implements Runnable {
 		}
 	}
 
-	private String pkgAdd(String packageId, String pathToZip) throws IOException {
+	private String pkgAdd(String pathToZip) throws IOException {
 		byte[] dataBytes = readFile(pathToZip);
 		String data = Base64.getEncoder().encodeToString(dataBytes);
 		PackageResponse resp = send(new PackageRequest()
 				.setType(PackageMessageType.ADD)
-				.setId(packageId)
 				.setData(data));
 		if(resp.getResult().getSuccess()) {
-			return "Added " + packageId;
+			return "Upload Successful";
 		} else {
 			return "ERROR: " + resp.getResult().getError();
 		}
@@ -300,11 +310,82 @@ public class CLI implements Runnable {
 	
 	private String parsePackageInfo(PackageInfo p) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(p.getId()).append(": ").append(p.getName()).append("\n");
+		sb.append("[").append(p.getId()).append("] ").append(p.getName()).append("\n");
 		for(ServiceInfo s : p.getServices().values()) {
 			sb.append("  ").append(s.getId()).append(": ").append(s.getName()).append("\n");
 		}
 		sb.setLength(sb.length()-1);
+		return sb.toString();
+	}
+	
+
+	private String ui(String[] params) throws IOException {
+		switch(params[0]) {
+		case "LIST":
+			return uiList();
+		case "GET":
+			return uiGet(params[1]);
+		case "ADD":
+			return uiAdd(params[1]);
+		case "REMOVE":
+			return uiRemove(params[1]);
+		default:
+			return params[0] + " is an unrecognized UI command";
+		}
+	}
+
+	private String uiList() throws IOException {
+		UiResponse resp = send(new UiRequest()
+				.setType(UiMessageType.LIST));
+		if(resp.getResult().getSuccess()) {
+			StringBuilder sb = new StringBuilder();
+			for(UiInfo p : resp.getUIs()) {
+				sb.append(parseUiInfo(p)).append("\n");
+			}
+			return sb.toString();
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+
+	private String uiGet(String packageId) throws IOException {
+		UiResponse resp = send(new UiRequest()
+				.setType(UiMessageType.GET)
+				.setId(packageId));
+		if(resp.getResult().getSuccess()) {
+			return parseUiInfo(resp.getUI());
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+
+	private String uiAdd(String pathToZip) throws IOException {
+		byte[] dataBytes = readFile(pathToZip);
+		String data = Base64.getEncoder().encodeToString(dataBytes);
+		UiResponse resp = send(new UiRequest()
+				.setType(UiMessageType.ADD)
+				.setData(data));
+		if(resp.getResult().getSuccess()) {
+			return "Upload Successful";
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+
+	private String uiRemove(String packageId) throws IOException {
+		UiResponse resp = send(new UiRequest()
+				.setType(UiMessageType.REMOVE)
+				.setId(packageId));
+		if(resp.getResult().getSuccess()) {
+			return "Removed " + packageId;
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+	
+	private String parseUiInfo(UiInfo u) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("[").append(u.getId()).append("] ").append(u.getName()).append("\n");
 		return sb.toString();
 	}
 	
@@ -316,6 +397,11 @@ public class CLI implements Runnable {
 	private PackageResponse send(PackageRequest request) throws IOException {
 		String json = send("PACKAGE", gson.toJson(request));
 		return gson.fromJson(json, PackageResponse.class);
+	}
+	
+	private UiResponse send(UiRequest request) throws IOException {
+		String json = send("UI", gson.toJson(request));
+		return gson.fromJson(json, UiResponse.class);
 	}
 	
 	private String send(String protocol, String json) throws IOException {
@@ -338,4 +424,5 @@ public class CLI implements Runnable {
 			throw new IOException("Could not send " + json, t);
 		}
 	}
+	
 }

@@ -1,2 +1,2 @@
 #!/bin/bash
-java -jar platform/cli/rook-cli.jar
+java -jar platform/cli/java/rook-cli.jar

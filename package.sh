@@ -75,8 +75,7 @@ cp -r target/rook-*-distribution/* ${PLATFORM}
 # Copy rook/html
 echo "Copying HTML"
 cd ${DIR}/html
-mkdir ${PLATFORM}/html
-cp -r * ${PLATFORM}/html/
+cp -r * ${PLATFORM}/
 
 # Copy to remote
 if [[ -z $REMOTE_TARGET ]]; then

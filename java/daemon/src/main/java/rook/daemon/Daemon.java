@@ -20,7 +20,8 @@ import rook.daemon.websocket.DaemonWebSocketCreator;
 
 public class Daemon {
 
-	private static final String HTML_DIR_NAME = "html";
+	private static final String DAEMON_HTML_DIR_NAME = "daemon/html";
+	private static final String UI_DIR_NAME = "ui";
 	
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -59,23 +60,36 @@ public class Daemon {
 			}
 		};
 		
+		File daemonHtmlDir = new File(platformDir, DAEMON_HTML_DIR_NAME);
+		File platformUiDir = new File(platformDir, UI_DIR_NAME);
+		File usrUiDir = new File(usrDir, UI_DIR_NAME);
+		
+		ResourceHandler daemonHandler = new ResourceHandler();
+		daemonHandler.setDirectoriesListed(false);
+		daemonHandler.setWelcomeFiles(new String[]{ "index.html" });
+		daemonHandler.setResourceBase(daemonHtmlDir.getAbsolutePath());
+	    ContextHandler daemonContext = new ContextHandler();
+	    daemonContext.setContextPath("/");
+	    daemonContext.setHandler(daemonHandler);
+	    
 		ResourceHandler platformHandler = new ResourceHandler();
-		platformHandler.setDirectoriesListed(true);
-		platformHandler.setWelcomeFiles(new String[]{ "index.html" });
-		platformHandler.setResourceBase(new File(platformDir, HTML_DIR_NAME).getAbsolutePath());
+		platformHandler.setDirectoriesListed(false);
+		daemonHandler.setWelcomeFiles(new String[]{ "index.html" });
+		platformHandler.setResourceBase(platformUiDir.getAbsolutePath());
 	    ContextHandler platformContext = new ContextHandler();
-	    platformContext.setContextPath("/");
+	    platformContext.setContextPath("/ui/");
 	    platformContext.setHandler(platformHandler);
 	    
 	    ResourceHandler usrHandler = new ResourceHandler();
-	    usrHandler.setDirectoriesListed(true);
-	    usrHandler.setResourceBase(new File(usrDir, HTML_DIR_NAME).getAbsolutePath());
+	    usrHandler.setDirectoriesListed(false);
+	    daemonHandler.setWelcomeFiles(new String[]{ "index.html" });
+	    usrHandler.setResourceBase(usrUiDir.getAbsolutePath());
 	    ContextHandler usrContext = new ContextHandler();
-	    usrContext.setContextPath("/");
+	    usrContext.setContextPath("/ui/");
 	    usrContext.setHandler(usrHandler);
 		
 	    HandlerList handlerList = new HandlerList();
-	    handlerList.setHandlers(new Handler[] { wsHandler, platformContext, usrContext, new DefaultHandler() });
+	    handlerList.setHandlers(new Handler[] { wsHandler, daemonContext, platformContext, usrContext, new DefaultHandler() });
 	    
 	    server = new Server(port);
 	    server.setHandler(handlerList);

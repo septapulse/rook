@@ -58,7 +58,7 @@
 							<attach>false</attach>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptors>
-								<descriptor>assembly.xml</descriptor>
+								<descriptor>package.xml</descriptor>
 							</descriptors>
 							<archive>
 								<manifest>

@@ -7,7 +7,7 @@ else
   exit
 fi
 
-nohup java -cp "platform/daemon/*:platform/api/*" \
+nohup java -cp "platform/daemon/java/*" \
   rook.daemon.Daemon \
   8080 \
   &> daemon.log &
