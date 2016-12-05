@@ -13,8 +13,8 @@ import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rook.api.config.Arg;
-import rook.api.config.Args;
+import io.septapulse.rook.api.config.Arg;
+import io.septapulse.rook.api.config.Args;
 import rook.ui.environment.Environment;
 import rook.ui.websocket.RookWebSocketCreator;
 

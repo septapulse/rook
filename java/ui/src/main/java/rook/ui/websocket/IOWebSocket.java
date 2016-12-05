@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
-import rook.api.RID;
-import rook.core.io.proxy.message.Cap;
-import rook.core.io.proxy.message.CapType;
-import rook.core.io.proxy.message.IOValue;
+import io.septapulse.rook.api.RID;
+import io.septapulse.rook.core.io.proxy.message.Cap;
+import io.septapulse.rook.core.io.proxy.message.CapType;
+import io.septapulse.rook.core.io.proxy.message.IOValue;
 import rook.ui.environment.Environment;
 import rook.ui.websocket.message.IORequest;
 import rook.ui.websocket.message.IOResponse;

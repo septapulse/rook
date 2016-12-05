@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rook.api.util.FileUtil;
+import io.septapulse.rook.api.util.FileUtil;
 
 @Deprecated
 class ProcessContext {

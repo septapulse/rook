@@ -3,7 +3,8 @@ package rook.core.io.proxy.message;
 import org.junit.Assert;
 import org.junit.Test;
 
-import rook.api.transport.GrowableBuffer;
+import io.septapulse.rook.api.transport.GrowableBuffer;
+import io.septapulse.rook.core.io.proxy.message.IOValue;
 
 public class TestIOValue {
 
