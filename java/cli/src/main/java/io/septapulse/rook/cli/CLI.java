@@ -124,6 +124,7 @@ public class CLI implements Runnable {
 				+ "\n  UI GET <ui_id>"
 				+ "\n  UI ADD <path_to_zip_file>"
 				+ "\n  UI REMOVE <ui_id>"
+				+ "\n  UI REFRESH"
 				+ "\n  help"
 				+ "\n  exit";
 	}
@@ -329,6 +330,8 @@ public class CLI implements Runnable {
 			return uiAdd(params[1]);
 		case "REMOVE":
 			return uiRemove(params[1]);
+		case "REFRESH":
+			return uiRefresh();
 		default:
 			return params[0] + " is an unrecognized UI command";
 		}
@@ -378,6 +381,16 @@ public class CLI implements Runnable {
 				.setId(packageId));
 		if(resp.getResult().getSuccess()) {
 			return "Removed " + packageId;
+		} else {
+			return "ERROR: " + resp.getResult().getError();
+		}
+	}
+	
+	private String uiRefresh() throws IOException {
+		UiResponse resp = send(new UiRequest()
+				.setType(UiMessageType.REFRESH));
+		if(resp.getResult().getSuccess()) {
+			return "I'm Feeling Refreshed";
 		} else {
 			return "ERROR: " + resp.getResult().getError();
 		}
