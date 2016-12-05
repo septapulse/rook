@@ -16,6 +16,10 @@
 			<email>ejthill@gmail.com</email>
 		</developer>
 	</developers>
+	
+	<properties>
+		<jetty.version>9.3.14.v20161028</jetty.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -36,12 +40,12 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>9.3.7.v20160115</version>
+			<version>${jetty.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-server</artifactId>
-			<version>9.3.7.v20160115</version>
+			<version>${jetty.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
