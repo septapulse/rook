@@ -6,11 +6,11 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rook.api.RID;
-import rook.api.exception.InitException;
-import rook.api.reflect.Instantiate;
-import rook.api.transport.ControllableTransport;
-import rook.core.io.proxy.IOProxy;
+import io.septapulse.rook.api.RID;
+import io.septapulse.rook.api.exception.InitException;
+import io.septapulse.rook.api.reflect.Instantiate;
+import io.septapulse.rook.api.transport.ControllableTransport;
+import io.septapulse.rook.core.io.proxy.IOProxy;
 
 /**
  * Utility to start, stop, and hook into a Rook environment

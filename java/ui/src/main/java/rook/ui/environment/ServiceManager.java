@@ -16,7 +16,7 @@ import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rook.api.Service;
+import io.septapulse.rook.api.Service;
 import rook.ui.websocket.message.PackageSupportInfo;
 import rook.ui.websocket.message.ServiceSupportInfo;
 

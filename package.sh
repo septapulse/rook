@@ -73,9 +73,16 @@ mkdir -p ${PLATFORM}
 cp -r target/rook-*-distribution/* ${PLATFORM}
 
 # Copy rook/html
-echo "Copying HTML"
+echo "Copying Daemon HTML"
 cd ${DIR}/html
-cp -r * ${PLATFORM}/
+cp -r daemon ${PLATFORM}/
+
+# Build platform ui zip files
+echo "Building UI zip files"
+mkdir ${PLATFORM}/ui
+cd ${DIR}/html/ui/packagemanager/ && zip -r ${PLATFORM}/ui/packagemanager.zip *
+cd ${DIR}/html/ui/processmanager/ && zip -r ${PLATFORM}/ui/processmanager.zip *
+cd ${DIR}/html/ui/sensorlogger/ && zip -r ${PLATFORM}/ui/sensorlogger.zip * 
 
 # Copy to remote
 if [[ -z $REMOTE_TARGET ]]; then

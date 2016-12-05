@@ -1,5 +1,5 @@
 #!/bin/bash
-PID=$(pgrep -f rook.daemon.Daemon)
+PID=$(pgrep -f io.septapulse.rook.daemon.Daemon)
 if [[ -z $PID ]]; then
   echo "Nothing to kill"  
 else
