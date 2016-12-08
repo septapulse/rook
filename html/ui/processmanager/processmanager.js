@@ -29,37 +29,26 @@ function open_start_dialog() {
 function handle_dialog_packages(json) {
   if(json.packages != null) {
     json.packages.forEach(function(pkg) {
-      add_dialog_package(pkg.id, pkg.name);
+      if(pkg.services != null) {
+        for (var key in pkg.services) {
+          if (pkg.services.hasOwnProperty(key)) {
+            service = pkg.services[key];
+            add_dialog_service(pkg.id, pkg.name, service.id, service.name);
+          }
+        }
+      }
     });
   }
 }
 
-function add_dialog_package(id, name) {
-  var node = template_create("template_package", "package_"+id, $("#dialog_content"));
-  node.find('[name="name"]').html(name);
-  node.find('[name="button"]').attr("onclick", "handle_dialog_package_click(\"" + id + "\")");
-}
-
-function handle_dialog_package_click(packageId) {
-  $("#dialog_content").html("");
-  rook_daemon_package_get(packageId, handle_dialog_services);
-}
-
-function handle_dialog_services(json) {
-  for (var key in json.pkg.services) {
-    if (json.pkg.services.hasOwnProperty(key)) {
-      service = json.pkg.services[key];
-      add_dialog_service(json.pkg.id, service.id, service.name);
-    }
-  }
-}
-
-function add_dialog_service(packageId, serviceId, serviceName) {
-  var node = template_create("template_package", "service_"+serviceId, $("#dialog_content"));
-  node.find('[name="name"]').html(serviceName);
+function add_dialog_service(packageId, packageName, serviceId, serviceName) {
+  var node = template_create("template_service", null, $("#dialog_content"));
+  node.find('[name="packageName"]').html(packageName);
+  node.find('[name="serviceName"]').html(serviceName);
   node.find('[name="button"]').attr("onclick", "handle_dialog_service_click(\"" + packageId + "\", \"" + serviceId + "\")");
 }
 
-function handle_dialog_service_click(packageId, serviceId) {
+function handle_dialog_service_click(packageId) {
   $("#dialog_content").html("");
+  // TODO
 }

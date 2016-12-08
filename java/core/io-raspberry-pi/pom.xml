@@ -8,7 +8,7 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>io-service</artifactId>
+	<artifactId>io-raspberry-pi</artifactId>
 	
 	<developers>
 		<developer>
@@ -19,14 +19,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>rook</groupId>
-			<artifactId>api</artifactId>
+			<groupId>rook.core</groupId>
+			<artifactId>io-service</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>rook.core</groupId>
-			<artifactId>io-proxy</artifactId>
-			<version>${project.version}</version>
+			<groupId>com.pi4j</groupId>
+ 			<artifactId>pi4j-core</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 		<dependency>

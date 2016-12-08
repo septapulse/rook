@@ -60,10 +60,6 @@ public class PackageManager {
 			switch (req.getType()) {
 			case LIST:
 				Collection<PackageInfo> packages = zipManager.all();
-				// no service info when all packages returned at once
-				for(PackageInfo info : packages) {
-					info.setServices(null);
-				}
 				result = new Result().setSuccess(packages != null);
 				send(session, new PackageResponse()
 						.setType(PackageMessageType.LIST)
