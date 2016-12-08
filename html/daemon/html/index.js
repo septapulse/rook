@@ -1,6 +1,6 @@
 function init() {
   window.onload = function() {
-  	rook_daemon_services_get_uis(handle_uis);
+  	rook_daemon_ui_list(handle_uis);
   }
 }
 
@@ -23,15 +23,4 @@ function add_module(name, url, image) {
   node.find('[name="name"]').html(name);
   node.find('[name="image"]').attr("src", image);
   node.find('[name="button"]').attr("onclick", " window.open(\"" + url + "\")");
-}
-
-function template_create(template_id, new_id, parent) {
-  var template = document.getElementById(template_id);
-  var copy = template.cloneNode(true);
-  copy.id=new_id;
-  if(parent != null) {
-	parent.append(copy);  
-  }
-  $(copy).show();
-  return $(copy);
 }

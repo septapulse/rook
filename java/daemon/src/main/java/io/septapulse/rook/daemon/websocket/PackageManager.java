@@ -75,9 +75,12 @@ public class PackageManager {
 				result = new Result().setSuccess(pkg != null);
 				if(pkg == null) {
 					result.setError("Package '" + req.getId() + "' does not exist");
+				} else {
+					// Force underlying services ID's match key
+					pkg.getServices().forEach((k,v)->v.setId(k));
 				}
 				send(session, new PackageResponse()
-						.setType(PackageMessageType.LIST)
+						.setType(PackageMessageType.GET)
 						.setResult(result)
 						.setPackage(pkg));
 				break;

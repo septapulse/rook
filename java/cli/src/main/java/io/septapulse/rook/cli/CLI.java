@@ -110,7 +110,7 @@ public class CLI implements Runnable {
 				+ "\n  package add <path_to_zip_file>"
 				+ "\n  package remove <package_id>"
 				+ "\n  package refresh"
-				+ "\n  process status"
+				+ "\n  process list"
 				+ "\n  process start <package_id> <service_id> <argument>[]"
 				+ "\n  process stop <process_id>"
 				+ "\n  process stop_forcibly <process_id>"
@@ -131,8 +131,8 @@ public class CLI implements Runnable {
 	
 	private String process(String[] params) throws IOException {
 		switch(params[0]) {
-		case "status":
-			return processStatus();
+		case "list":
+			return processList();
 		case "start":
 			return processStart(params[1], params[2], Arrays.copyOfRange(params, 2, params.length));
 		case "stop":
@@ -148,9 +148,9 @@ public class CLI implements Runnable {
 		}
 	}
 
-	private String processStatus() throws IOException {
+	private String processList() throws IOException {
 		ProcessResponse resp = send(new ProcessRequest()
-				.setType(ProcessMessageType.STATUS));
+				.setType(ProcessMessageType.LIST));
 		if(resp.getResult().getSuccess()) {
 			StringBuilder sb = new StringBuilder();
 			for(ProcessInfo p : resp.getProcesses()) {
