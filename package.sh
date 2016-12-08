@@ -56,6 +56,9 @@ USER=${LOCAL_TARGET}usr/
 mkdir -p $PLATFORM
 mkdir -p $USER
 
+# Clean PLATFORM directory
+rm -rf ${PLATFORM}/*
+
 # Copy scripts
 echo "Copying Scripts"
 cd ${DIR}

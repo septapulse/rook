@@ -1,10 +1,10 @@
 package io.septapulse.rook.core.transport.aeron;
 
 import io.aeron.driver.MediaDriver;
-import io.septapulse.rook.api.transport.AbstractTransportTest;
 import io.septapulse.rook.api.transport.ControllableTransport;
 import io.septapulse.rook.core.transport.aeron.AeronTransport;
 import io.septapulse.rook.core.transport.aeron.AeronTransportConfig;
+import io.septapulse.rook.test.transport.AbstractTransportTest;
 
 public class TestAeronTransport extends AbstractTransportTest {
 

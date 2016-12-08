@@ -1,11 +1,11 @@
 package io.septapulse.rook.core.transport.tcp;
 
-import io.septapulse.rook.api.transport.AbstractTransportTest;
 import io.septapulse.rook.api.transport.ControllableTransport;
 import io.septapulse.rook.core.transport.tcp.TcpRouter;
 import io.septapulse.rook.core.transport.tcp.TcpRouterConfig;
 import io.septapulse.rook.core.transport.tcp.TcpTransport;
 import io.septapulse.rook.core.transport.tcp.TcpTransportConfig;
+import io.septapulse.rook.test.transport.AbstractTransportTest;
 
 public class TestTcpTransport extends AbstractTransportTest {
 

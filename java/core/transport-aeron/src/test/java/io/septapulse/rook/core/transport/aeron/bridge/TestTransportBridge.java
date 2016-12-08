@@ -2,12 +2,12 @@ package io.septapulse.rook.core.transport.aeron.bridge;
 
 import io.aeron.driver.MediaDriver;
 import io.septapulse.rook.api.RID;
-import io.septapulse.rook.api.transport.AbstractTransportTest;
 import io.septapulse.rook.api.transport.ControllableTransport;
 import io.septapulse.rook.api.transport.bridge.TransportBridge;
 import io.septapulse.rook.core.transport.aeron.AeronTransport;
 import io.septapulse.rook.core.transport.aeron.AeronTransportConfig;
 import io.septapulse.rook.core.transport.aeron.EmbeddedAeronDriver;
+import io.septapulse.rook.test.transport.AbstractTransportTest;
 
 public class TestTransportBridge extends AbstractTransportTest {
 

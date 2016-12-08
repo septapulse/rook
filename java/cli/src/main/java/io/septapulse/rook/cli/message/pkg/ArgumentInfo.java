@@ -1,5 +1,8 @@
 package io.septapulse.rook.cli.message.pkg;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 
 public class ArgumentInfo {
@@ -8,6 +11,8 @@ public class ArgumentInfo {
 	private Double minValue;
 	private Double maxValue;
 	private Double increment;
+	private List<String> enumValues;
+	private Map<String, ArgumentInfo> children;
 
 	public String getName() {
 		return name;
@@ -51,6 +56,23 @@ public class ArgumentInfo {
 
 	public ArgumentInfo setIncrement(Double increment) {
 		this.increment = increment;
+		return this;
+	}
+	
+	public List<String> getEnumValues() {
+		return enumValues;
+	}
+	
+	public void setEnumValues(List<String> enumValues) {
+		this.enumValues = enumValues;
+	}
+	
+	public Map<String, ArgumentInfo> getChildren() {
+		return children;
+	}
+	
+	public ArgumentInfo setChildren(Map<String, ArgumentInfo> children) {
+		this.children = children;
 		return this;
 	}
 

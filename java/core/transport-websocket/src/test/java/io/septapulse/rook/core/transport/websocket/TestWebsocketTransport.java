@@ -1,11 +1,11 @@
 package io.septapulse.rook.core.transport.websocket;
 
-import io.septapulse.rook.api.transport.AbstractTransportTest;
 import io.septapulse.rook.api.transport.ControllableTransport;
 import io.septapulse.rook.core.transport.websocket.WebsocketRouter;
 import io.septapulse.rook.core.transport.websocket.WebsocketRouterConfig;
 import io.septapulse.rook.core.transport.websocket.WebsocketTransport;
 import io.septapulse.rook.core.transport.websocket.WebsocketTransportConfig;
+import io.septapulse.rook.test.transport.AbstractTransportTest;
 
 public class TestWebsocketTransport extends AbstractTransportTest {
 
