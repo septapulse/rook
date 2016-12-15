@@ -5,7 +5,49 @@
 		<link rel="stylesheet" type="text/css" href="/rook.css">
 	</head>
 	<body>
-	  <h1>Process Manager</h1>
-	  <h2>TODO</h2>
+		<script src="/js/jquery-3.1.0.js"></script>
+		<script src="/js/rook-daemon.js"></script>
+		<script src="/js/rook-helper.js"></script>
+		<script src="processmanager.js"></script>
+		<script>init()</script>
+		
+		<div>
+			<p class="spaced">
+				<mark class="spacedColor">Ro</mark>botics <mark class="spacedColor">O</mark>rchestration <mark class="spacedColor">K</mark>it
+			</p>
+		</div>
+		
+		<h1>Process Manager</h1>
+		
+		<button id="button_start">Start...</button>
+		
+		<module id="template_process" class="template">
+			<div style="width:90%; margin:5% 5%; background: #585858; border: 0; border-radius: 10px;">
+				<button name="close" style="float:right; margin:10px 10px">Close</button>
+				<h1 name="service" style="text-align:left; margin:10px 10px; padding-top:10px" name="service">TITLE</h1>
+				<h3 name="package" style="text-align:left; margin:10px 20px;" name="package">SUBTITLE</h3>
+				<div style="padding:10px 10px;">
+					<log>
+						<textarea wrap="off" readonly name="log" style="padding:10px 10px"></textarea>
+					</log>
+				</div>
+		  	</div>
+	  	</module>
+	  	
+	  	<module id="template_service" class="template">
+	  		<div>
+				<button name="button" style="width:100%;">
+					<h1 name="serviceName">MODULE</h1>
+					<h3 name="packageName">PACAKGE</h3>
+				</button>
+			</div>
+		</module>
+		
+	  	<dialog id="dialog" style="height:80%, width:55%">
+	  		<div id="dialog_content" style="overflow-y:scroll;">
+				
+			</div>
+			<button style="margin:10px 10px;" onclick="document.getElementById('dialog').close()">Cancel</button>
+		</dialog>
 	</body>
 </html>

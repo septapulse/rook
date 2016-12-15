@@ -26,6 +26,7 @@
 		<module>transport-websocket</module>
 		<module>io-proxy</module>
 		<module>io-service</module>
+		<module>io-raspberry-pi</module>
 	 </modules>
 
 	<properties>

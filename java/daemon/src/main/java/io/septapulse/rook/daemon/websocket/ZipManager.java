@@ -204,8 +204,8 @@ public class ZipManager<T> {
 						FileUtil.writeFully(md5new, md5file);
 					}
 				}
-			} catch(IOException e) {
-				logger.error("Could not process " + f.getAbsolutePath(), e);
+			} catch(Throwable t) {
+				logger.error("Could not process " + f.getAbsolutePath(), t);
 			}
 		}
 	}

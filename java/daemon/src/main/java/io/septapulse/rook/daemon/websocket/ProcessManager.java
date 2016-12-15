@@ -57,11 +57,11 @@ public class ProcessManager {
 		List<ProcessInfo> processes;
 		try {
 			switch (req.getType()) {
-			case STATUS:
+			case LIST:
 				processes = getProcesses();
 				success = processes != null;
 				send(session, new ProcessResponse()
-						.setType(ProcessMessageType.STATUS)
+						.setType(ProcessMessageType.LIST)
 						.setResult(new Result().setSuccess(success))
 						.setProcesses(processes));
 				break;

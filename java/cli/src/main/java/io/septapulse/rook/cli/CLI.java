@@ -71,16 +71,16 @@ public class CLI implements Runnable {
 					case "help":
 						clout.println(help());
 						break;
-					case "PROCESS":
+					case "process":
 						clout.println(process(Arrays.copyOfRange(cmd, 1, cmd.length)));
 						break;
-					case "PACKAGE":
+					case "package":
 						clout.println(pkg(Arrays.copyOfRange(cmd, 1, cmd.length)));
 						break;
-					case "CONFIG":
+					case "config":
 						clout.println("CONFIG commands are not supported quite yet");
 						break;
-					case "UI":
+					case "ui":
 						clout.println(ui(Arrays.copyOfRange(cmd, 1, cmd.length)));
 						break;
 					default:
@@ -105,52 +105,52 @@ public class CLI implements Runnable {
 
 	private String help() {
 		return "commands:"
-				+ "\n  PACKAGE LIST"
-				+ "\n  PACKAGE GET <package_id>"
-				+ "\n  PACKAGE ADD <path_to_zip_file>"
-				+ "\n  PACKAGE REMOVE <package_id>"
-				+ "\n  PACKAGE REFRESH"
-				+ "\n  PROCESS STATUS"
-				+ "\n  PROCESS START <package_id> <service_id> <argument>[]"
-				+ "\n  PROCESS STOP <process_id>"
-				+ "\n  PROCESS STOP_FORCIBLY <process_id>"
-				+ "\n  PROCESS CLEAN <process_id:optional>"
-				+ "\n  PROCESS LOG <process_id>"
-				+ "\n  CONFIG LIST <package_id:optional> <service_id:optional>"
-				+ "\n  CONFIG GET <package_id> <service_id> <config_name>"
-				+ "\n  CONFIG UPLOAD <package_id> <service_id> <config_name> <path_to_config_file>"
-				+ "\n  CONFIG REMOVE <package_id> <service_id> <config_name>"
-				+ "\n  UI LIST"
-				+ "\n  UI GET <ui_id>"
-				+ "\n  UI ADD <path_to_zip_file>"
-				+ "\n  UI REMOVE <ui_id>"
-				+ "\n  UI REFRESH"
+				+ "\n  package list"
+				+ "\n  package get <package_id>"
+				+ "\n  package add <path_to_zip_file>"
+				+ "\n  package remove <package_id>"
+				+ "\n  package refresh"
+				+ "\n  process list"
+				+ "\n  process start <package_id> <service_id> <argument>[]"
+				+ "\n  process stop <process_id>"
+				+ "\n  process stop_forcibly <process_id>"
+				+ "\n  process clean <process_id:optional>"
+				+ "\n  process log <process_id>"
+				+ "\n  config list <package_id:optional> <service_id:optional>"
+				+ "\n  config get <package_id> <service_id> <config_name>"
+				+ "\n  config upload <package_id> <service_id> <config_name> <path_to_config_file>"
+				+ "\n  config remove <package_id> <service_id> <config_name>"
+				+ "\n  ui list"
+				+ "\n  ui get <ui_id>"
+				+ "\n  ui add <path_to_zip_file>"
+				+ "\n  ui remove <ui_id>"
+				+ "\n  ui refresh"
 				+ "\n  help"
 				+ "\n  exit";
 	}
 	
 	private String process(String[] params) throws IOException {
 		switch(params[0]) {
-		case "STATUS":
-			return processStatus();
-		case "START":
+		case "list":
+			return processList();
+		case "start":
 			return processStart(params[1], params[2], Arrays.copyOfRange(params, 2, params.length));
-		case "STOP":
+		case "stop":
 			return processStop(params[1]);
-		case "STOP_FORCIBLY":
+		case "stop_forcibly":
 			return processStopForcibly(params[1]);
-		case "CLEAN":
+		case "clean":
 			return processClean(params.length > 1 ? params[1] : null);
-		case "LOG":
+		case "log":
 			return processLog(params[1]);
 		default:
-			return params[0] + " is an unrecognized PROCESS command";
+			return params[0] + " is an unrecognized process command";
 		}
 	}
 
-	private String processStatus() throws IOException {
+	private String processList() throws IOException {
 		ProcessResponse resp = send(new ProcessRequest()
-				.setType(ProcessMessageType.STATUS));
+				.setType(ProcessMessageType.LIST));
 		if(resp.getResult().getSuccess()) {
 			StringBuilder sb = new StringBuilder();
 			for(ProcessInfo p : resp.getProcesses()) {
@@ -230,18 +230,18 @@ public class CLI implements Runnable {
 
 	private String pkg(String[] params) throws IOException {
 		switch(params[0]) {
-		case "LIST":
+		case "list":
 			return pkgList();
-		case "GET":
+		case "get":
 			return pkgGet(params[1]);
-		case "ADD":
+		case "add":
 			return pkgAdd(params[1]);
-		case "REMOVE":
+		case "remove":
 			return pkgRemove(params[1]);
-		case "REFRESH":
+		case "refresh":
 			return pkgRefresh();
 		default:
-			return params[0] + " is an unrecognized PACKAGE command";
+			return params[0] + " is an unrecognized package command";
 		}
 	}
 
@@ -322,18 +322,18 @@ public class CLI implements Runnable {
 
 	private String ui(String[] params) throws IOException {
 		switch(params[0]) {
-		case "LIST":
+		case "list":
 			return uiList();
-		case "GET":
+		case "get":
 			return uiGet(params[1]);
-		case "ADD":
+		case "add":
 			return uiAdd(params[1]);
-		case "REMOVE":
+		case "remove":
 			return uiRemove(params[1]);
-		case "REFRESH":
+		case "refresh":
 			return uiRefresh();
 		default:
-			return params[0] + " is an unrecognized UI command";
+			return params[0] + " is an unrecognized ui command";
 		}
 	}
 

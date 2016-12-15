@@ -7,6 +7,19 @@
 	<baseDirectory>.</baseDirectory>
 	<files>
 		<file>
+			<source>core/io-service/target/io-service-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>core/io-raspberry-pi/target/io-raspberry-pi-distribution.zip</source>
+			<outputDirectory>/packages/</outputDirectory>
+		</file>
+		<file>
+			<source>cli/target/rook-cli.jar</source>
+			<outputDirectory>/cli/java/</outputDirectory>
+		</file>
+		<!-- Experimental -->
+		<!--file>
 			<source>core/transport-aeron/target/transport-aeron-distribution.zip</source>
 			<outputDirectory>/packages/</outputDirectory>
 		</file>
@@ -21,15 +34,7 @@
 		<file>
 			<source>core/transport-websocket/target/transport-websocket-distribution.zip</source>
 			<outputDirectory>/packages/</outputDirectory>
-		</file>
-		<file>
-			<source>core/io-service/target/io-service-distribution.zip</source>
-			<outputDirectory>/packages/</outputDirectory>
-		</file>
-		<file>
-			<source>cli/target/rook-cli.jar</source>
-			<outputDirectory>/cli/java/</outputDirectory>
-		</file>
+		</file-->
 	</files>
 	<fileSets>
 		<fileSet>

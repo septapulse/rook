@@ -1,5 +1,17 @@
-function rook_daemon_services_get_uis(response_handler) {
+function rook_daemon_ui_list(response_handler) {
   rook_daemon_send_listen_json_disconnect("UI", '{ "type": "LIST" }', response_handler);
+}
+
+function rook_daemon_process_list(response_handler) {
+  rook_daemon_send_listen_json_disconnect("PROCESS", '{ "type": "LIST" }', response_handler);
+}
+
+function rook_daemon_package_list(response_handler) {
+  rook_daemon_send_listen_json_disconnect("PACKAGE", '{ "type": "LIST" }', response_handler);
+}
+
+function rook_daemon_package_get(id, response_handler) {
+  rook_daemon_send_listen_json_disconnect("PACKAGE", '{ "type": "GET", "id": "' + id + '" }', response_handler);
 }
 
 function rook_daemon_send_listen_json_disconnect(protocol, text, response_handler) {
