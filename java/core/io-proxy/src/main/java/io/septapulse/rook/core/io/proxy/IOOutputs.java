@@ -1,15 +1,12 @@
 package io.septapulse.rook.core.io.proxy;
 
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.atomic.AtomicLong;
 
 import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.Service;
 import io.septapulse.rook.api.transport.GrowableBuffer;
 import io.septapulse.rook.api.transport.Transport;
-import io.septapulse.rook.core.io.proxy.message.CapType;
 import io.septapulse.rook.core.io.proxy.message.IOValue;
 
 /**
@@ -22,62 +19,46 @@ import io.septapulse.rook.core.io.proxy.message.IOValue;
  */
 public class IOOutputs extends IOListener {
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final Transport transport;
+	private final RID ioServiceId;
+	private final AtomicLong nextUniqueId = new AtomicLong();
 	
-	IOOutputs(Transport transport) {
-		super(transport, IOGroups.OUTPUT, CapType.OUTPUT);
+	IOOutputs(Transport transport, RID ioServiceId) {
+		super(transport, ioServiceId, IOGroups.OUTPUT);
 		this.transport = transport;
+		this.ioServiceId = ioServiceId;
 	}
 	
 	public void setOutput(RID id, IOValue value) {
-		RID serviceID = getServiceID(id);
-		if(serviceID == null) {
-			logger.error("Cannot send unrecognized output ID: " + id);
-			return;
-		}
 		// FIXME reuse buffer
 		GrowableBuffer buf = GrowableBuffer.allocate(8+value.getSerializedLength());
-		buf.direct().putLong(0, id.toValue());
-		buf.length(8);
+		buf.length(17);
+		buf.direct().putLong(0, nextUniqueId.getAndIncrement());
+		buf.direct().putByte(8, IOMessageConst.SET_OUTPUT);
+		buf.direct().putLong(9, id.toValue());
 		value.serialize(buf);
-		transport.ucast().send(serviceID, buf);
+		transport.ucast().send(ioServiceId, buf);
  	}
 	
 	public void setOutputs(Map<RID, IOValue> outputs) {
 		if(outputs.size() == 0) {
 			return;
 		}
-		boolean allToSameService = true;
-		RID serviceID = getServiceID(outputs.entrySet().iterator().next().getKey());
+		int serializedSize = 0;
 		for(Map.Entry<RID, IOValue> e : outputs.entrySet()) {
-			RID sid = getServiceID(e.getKey());
-			if(!sid.equals(serviceID)) {
-				allToSameService = false;
-				break;
-			}
+			serializedSize+=8+e.getValue().getSerializedLength();
 		}
-		if(allToSameService) {
-			// send as batch to single service (more efficient)
-			int serializedSize = 0;
-			for(Map.Entry<RID, IOValue> e : outputs.entrySet()) {
-				serializedSize+=8+e.getValue().getSerializedLength();
-			}
-			// FIXME reuse buffer
-			GrowableBuffer buf = GrowableBuffer.allocate(serializedSize);
-			buf.length(0);
-			for(Map.Entry<RID, IOValue> e : outputs.entrySet()) {
-				buf.direct().putLong(buf.length(), e.getKey().toValue());
-				buf.length(buf.length()+8);
-				e.getValue().serialize(buf);
-			}
-			transport.ucast().send(serviceID, buf);
-		} else {
-			// send one-by-one (not all to same service)
-			for(Map.Entry<RID, IOValue> e : outputs.entrySet()) {
-				setOutput(e.getKey(), e.getValue());
-			}
+		// FIXME reuse buffer
+		GrowableBuffer buf = GrowableBuffer.allocate(serializedSize);
+		buf.length(9);
+		buf.direct().putLong(0, nextUniqueId.getAndIncrement());
+		buf.direct().putByte(8, IOMessageConst.SET_OUTPUT);
+		for(Map.Entry<RID, IOValue> e : outputs.entrySet()) {
+			buf.direct().putLong(buf.length(), e.getKey().toValue());
+			buf.length(buf.length()+8);
+			e.getValue().serialize(buf);
 		}
+		transport.ucast().send(ioServiceId, buf);
  	}
 	
 }

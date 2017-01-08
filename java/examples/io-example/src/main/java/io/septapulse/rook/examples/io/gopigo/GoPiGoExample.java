@@ -3,6 +3,7 @@ package io.septapulse.rook.examples.io.gopigo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.Service;
 import io.septapulse.rook.api.config.Configurable;
 import io.septapulse.rook.api.exception.InitException;
@@ -19,6 +20,7 @@ public class GoPiGoExample implements Service {
 	
 	// parsed from the configuration
 	private final int escapeDistance;
+	private final RID goPiGoServiceId;
 	
 	// create during init
 	private IOProxy ioProxy;
@@ -30,12 +32,13 @@ public class GoPiGoExample implements Service {
 	@Configurable
 	public GoPiGoExample(GoPiGoExampleServiceConfig config) {
 		this.escapeDistance = config.escapeDistance;
+		this.goPiGoServiceId = RID.create(config.goPiGoServiceId);
 	}
 	
 	@Override
 	public void setTransport(Transport transport) {
 		// Create the IOProxy
-		ioProxy = new IOProxy(transport);
+		ioProxy = new IOProxy(transport, goPiGoServiceId);
 	}
 
 	@Override

@@ -15,7 +15,7 @@ public class GoPiGoService extends IOService {
 	
 	@Configurable
 	public GoPiGoService(GoPiGoConfig config) throws InitException {
-		super(DEFAULT_BROADCAST_INTERVAL, DEFAULT_RECONNECT_INTERVAL);
+		super(config.getBroadcastInterval());
 		logger.info("config: " + config);
 		device = new GoPiGo(config);
 	}
@@ -24,7 +24,7 @@ public class GoPiGoService extends IOService {
 	public void onInit() throws InitException {
 		try {
 			logger.info("Initializing " + device);
-			device.init(ioManager);
+			device.init(this);
 			logger.info("Waiting 2 seconds for configuration to complete");
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {

@@ -28,7 +28,7 @@ public class RaspberryPiService extends IOService {
 	
 	@Configurable
 	public RaspberryPiService(RaspberryPiConfig config) throws InitException {
-		super(DEFAULT_BROADCAST_INTERVAL, DEFAULT_RECONNECT_INTERVAL);
+		super(config.broadcastInterval);
 		logger.info("config: " + config);
 		if(config.goPiGo != null)
 			devices.add(new GoPiGo(config.goPiGo));
@@ -46,7 +46,7 @@ public class RaspberryPiService extends IOService {
 		try {
 			for(RaspberryPiDevice device : devices) {
 				logger.info("Initializing " + device);
-				device.init(ioManager);
+				device.init(this);
 			}
 			logger.info("Waiting 2 seconds for configuration to complete");
 			Thread.sleep(2000);

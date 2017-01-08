@@ -2,6 +2,8 @@ package io.septapulse.rook.core.io.raspberrypi.gpio;
 
 import java.util.List;
 
+import io.septapulse.rook.api.config.Configurable;
+
 /**
  * A configuration for a {@link Gpio}
  * 
@@ -10,6 +12,8 @@ import java.util.List;
  */
 public class GpioConfig {
 	
+	@Configurable(min="1", increment="1", comment="Number of milliseconds between broadcasting Input/Output changes", defaultValue="100")
+	public long broadcastInterval = 100;
 	public List<PinConfig> pins;
 	
 	public class PinConfig {

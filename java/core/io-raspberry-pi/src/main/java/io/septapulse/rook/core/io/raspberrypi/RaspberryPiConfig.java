@@ -7,7 +7,6 @@ import io.septapulse.rook.core.io.raspberrypi.gopigo.GoPiGoConfig;
 import io.septapulse.rook.core.io.raspberrypi.gpio.GpioConfig;
 import io.septapulse.rook.core.io.raspberrypi.grovepi.GrovePiPlusConfig;
 import io.septapulse.rook.core.io.raspberrypi.hc_sr04.HC_SR04Config;
-import io.septapulse.rook.core.io.service.IOService;
 
 /**
  * Configuration for a {@link RaspberryPiService} {@link IOService}
@@ -16,6 +15,9 @@ import io.septapulse.rook.core.io.service.IOService;
  *
  */
 public class RaspberryPiConfig {
+	
+	@Configurable(min="1", increment="1", comment="Number of milliseconds between broadcasting Input/Output changes", defaultValue="100")
+	public long broadcastInterval = 100;
 	
 	@Configurable(comment="GoPiGo")
 	public GoPiGoConfig goPiGo;

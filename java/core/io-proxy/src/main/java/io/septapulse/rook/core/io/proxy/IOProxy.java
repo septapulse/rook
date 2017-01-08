@@ -1,8 +1,17 @@
 package io.septapulse.rook.core.io.proxy;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.Service;
+import io.septapulse.rook.api.transport.GrowableBuffer;
 import io.septapulse.rook.api.transport.Transport;
+import io.septapulse.rook.api.transport.consumer.BroadcastMessageConsumer;
+import io.septapulse.rook.api.util.Sleep;
 import io.septapulse.rook.core.io.proxy.message.Cap;
+import io.septapulse.rook.core.io.proxy.message.CapsDeserializer;
 
 /**
  * Takes care of all wire-level communications to IO {@link Service}s in 
@@ -13,15 +22,33 @@ import io.septapulse.rook.core.io.proxy.message.Cap;
  */
 public class IOProxy {
 
+	private static final GrowableBuffer PROBE_PAYLOAD = GrowableBuffer.allocate(0);
+		
+	public static Map<RID, List<Cap>> probe(Transport transport, long timeout) {
+		Map<RID, List<Cap>> results = new LinkedHashMap<>();
+		BroadcastMessageConsumer<List<Cap>> capsListener = new BroadcastMessageConsumer<List<Cap>>() {
+			@Override
+			public void onBroadcastMessage(RID from, RID group, List<Cap> caps) {
+				results.put(from.immutable(), caps);
+			}
+		};
+		transport.bcast().addMessageConsumer(IOGroups.CAPS, null, capsListener, new CapsDeserializer());
+		boolean newJoin = transport.bcast().join(IOGroups.CAPS);
+		transport.bcast().send(IOGroups.PROBE, PROBE_PAYLOAD);
+		Sleep.trySleep(timeout);
+		if(newJoin) {
+			transport.bcast().leave(IOGroups.CAPS);
+		}
+		transport.bcast().removeMessageConsumer(capsListener);
+		return results;
+	}
+	
 	private final IOOutputs outputs;
 	private final IOInputs inputs;
-	private final CapsCache capsCache;
 	
-	public IOProxy(Transport transport) {
-		outputs = new IOOutputs(transport);
-		inputs = new IOInputs(transport);
-		capsCache = new CapsCache(transport);
-		capsCache.requestCaps();
+	public IOProxy(Transport transport, RID ioServiceId) {
+		outputs = new IOOutputs(transport, ioServiceId);
+		inputs = new IOInputs(transport, ioServiceId);
 	}
 	
 	/**
@@ -30,7 +57,6 @@ public class IOProxy {
 	public void stop() {
 		inputs.stop();
 		outputs.stop();
-		capsCache.stop();
 	}
 	
 	/**
@@ -39,8 +65,6 @@ public class IOProxy {
 	public void reset() {
 		inputs.reset();
 		outputs.reset();
-		capsCache.reset();
-		capsCache.requestCaps();
 	}
 	
 	/**
@@ -59,15 +83,6 @@ public class IOProxy {
 	 */
 	public IOOutputs outputs() {
 		return outputs;
-	}
-	
-	/**
-	 * Get the cache for all IO Service {@link Cap}s
-	 * 
-	 * @return CapsCache
-	 */
-	public CapsCache caps() {
-		return capsCache;
 	}
 
 }

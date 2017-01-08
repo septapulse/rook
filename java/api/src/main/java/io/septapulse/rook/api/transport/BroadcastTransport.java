@@ -71,8 +71,9 @@ public interface BroadcastTransport {
 	 * 
 	 * @param group
 	 *            The group to join
+	 * @return true if this was a new join, false if the transport already belonged to the group
 	 */
-	void join(RID group);
+	boolean join(RID group);
 
 	/**
 	 * Leave the given broadcast group. This will stop the flow of messages to
@@ -80,8 +81,9 @@ public interface BroadcastTransport {
 	 * 
 	 * @param group
 	 *            The group to leave
+	 * @param true if the group was left, false if the transport didn't belong to the group
 	 */
-	void leave(RID group);
+	boolean leave(RID group);
 
 	/**
 	 * Add a consumer to listen to JOIN events

@@ -2,9 +2,8 @@ package io.septapulse.rook.core.io.raspberrypi.gpio;
 
 import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.exception.InitException;
-import io.septapulse.rook.core.io.proxy.message.IOValue;
 import io.septapulse.rook.core.io.raspberrypi.RaspberryPiDevice;
-import io.septapulse.rook.core.io.service.IOManager;
+import io.septapulse.rook.core.io.service.IOService;
 
 /**
  * A {@link RaspberryPiDevice} that can interface with GPIO pins
@@ -21,13 +20,14 @@ public class Gpio implements RaspberryPiDevice {
 	}
 	
 	@Override
-	public void init(IOManager ioManager) throws InitException {
+	public void init(IOService ioManager) throws InitException {
 		for(GpioConfig.PinConfig c : config.pins) {
 			RID id = RID.create(c.name);
 			if(c.type == GpioConfig.PinType.INPUT) {
-				ioManager.addInput(id, new GpioDigitalInput(c.pin, id));
+				ioManager.addInput(new GpioDigitalInput(c.pin, id));
 			} else if(c.type == GpioConfig.PinType.OUTPUT) {
-				ioManager.addOutput(id, new GpioDigitalOutput(c.pin, id, c.shutdownState), new IOValue().setValue(c.shutdownState));
+				ioManager.addOutput(new GpioDigitalOutput(c.pin, id, c.shutdownState));
+				// TODO implement: new IOValue().setValue(c.shutdownState);
 			}
 		}
 	}

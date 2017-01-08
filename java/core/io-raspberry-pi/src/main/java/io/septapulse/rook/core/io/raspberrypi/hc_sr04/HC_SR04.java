@@ -17,8 +17,8 @@ import io.septapulse.rook.core.io.proxy.message.CapType;
 import io.septapulse.rook.core.io.proxy.message.DataType;
 import io.septapulse.rook.core.io.proxy.message.IOValue;
 import io.septapulse.rook.core.io.raspberrypi.RaspberryPiDevice;
+import io.septapulse.rook.core.io.service.IOService;
 import io.septapulse.rook.core.io.service.IOInput;
-import io.septapulse.rook.core.io.service.IOManager;
 
 /**
  * An HC_SR04 ultrasonic device using GPIO pins
@@ -69,9 +69,9 @@ public class HC_SR04 implements IOInput, RaspberryPiDevice {
 	}
 	
 	@Override
-	public void init(IOManager ioManager) throws InitException {
+	public void init(IOService ioManager) throws InitException {
 		init();
-		ioManager.addInput(id, this);
+		ioManager.addInput(this);
 	}
 	
 	@Override

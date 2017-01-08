@@ -1,8 +1,8 @@
 package io.septapulse.rook.core.io.proxy;
 
+import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.Service;
 import io.septapulse.rook.api.transport.Transport;
-import io.septapulse.rook.core.io.proxy.message.CapType;
 
 /**
  * Listens to Inputs from all IO {@link Service}s
@@ -12,8 +12,8 @@ import io.septapulse.rook.core.io.proxy.message.CapType;
  */
 public class IOInputs extends IOListener {
 
-	IOInputs(Transport transport) {
-		super(transport, IOGroups.INPUT, CapType.INPUT);
+	IOInputs(Transport transport, RID ioServiceId) {
+		super(transport, ioServiceId, IOGroups.INPUT);
 	}
 	
 }

@@ -18,7 +18,7 @@ public class DummyIOService extends IOService {
 	
 	@Configurable
 	public DummyIOService(DummyIOServiceConfig config) throws InitException {
-		super(config);
+		super(config.getBroadcastInterval());
 		this.config = config;
 	}
 
@@ -27,13 +27,13 @@ public class DummyIOService extends IOService {
 		if(config.getInputs() != null) {
 			for(Entry input : config.getInputs()) {
 				RID id = RID.create(input.getId()).immutable();
-				ioManager.addInput(id, new DummyIOInput(id, input.getType()));
+				addInput(new DummyIOInput(id, input.getType()));
 			}
 		}
 		if(config.getOutputs() != null) {
 			for(Entry output : config.getOutputs()) {
 				RID id = RID.create(output.getId()).immutable();
-				ioManager.addOutput(id, new DummyIOOutput(id, output.getType()), null);
+				addOutput(new DummyIOOutput(id, output.getType()));
 			}
 		}
 	}

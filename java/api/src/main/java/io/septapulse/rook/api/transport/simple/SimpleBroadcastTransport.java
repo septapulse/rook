@@ -68,15 +68,17 @@ public class SimpleBroadcastTransport implements BroadcastTransport {
 	}
 	
 	@Override
-	public void join(RID group) {
-		joinedGroups.add(group, false);
+	public boolean join(RID group) {
+		boolean added = joinedGroups.add(group, false);
 		incognito_join(serviceId, group);
+		return added;
 	}
 
 	@Override
-	public void leave(RID group) {
-		joinedGroups.removeAll(group);
+	public boolean leave(RID group) {
+		boolean removed = joinedGroups.removeAll(group);
 		incognito_leave(serviceId, group);
+		return removed;
 	}
 	
 	@Override

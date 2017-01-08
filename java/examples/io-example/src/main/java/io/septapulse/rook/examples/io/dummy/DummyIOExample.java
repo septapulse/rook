@@ -1,7 +1,5 @@
 package io.septapulse.rook.examples.io.dummy;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +10,6 @@ import io.septapulse.rook.api.exception.InitException;
 import io.septapulse.rook.api.transport.Transport;
 import io.septapulse.rook.api.util.Sleep;
 import io.septapulse.rook.core.io.proxy.IOProxy;
-import io.septapulse.rook.core.io.proxy.message.Cap;
 import io.septapulse.rook.core.io.proxy.message.IOValue;
 
 public class DummyIOExample implements Service {
@@ -21,6 +18,7 @@ public class DummyIOExample implements Service {
 	
 	// parsed from the configuration
 	private final long outputInterval;
+	private final RID ioServiceId;
 	private final RID outputId;
 	
 	// create during init
@@ -33,7 +31,8 @@ public class DummyIOExample implements Service {
 	@Configurable
 	public DummyIOExample(DummyIOExampleServiceConfig config) {
 		this.outputInterval = config.outputInterval;
-		this.outputId = config.outputId == null ? null : RID.create(config.outputId);
+		this.ioServiceId = RID.create(config.ioServiceId);
+		this.outputId = RID.create(config.outputId);
 	}
 	
 	@Override
@@ -43,14 +42,11 @@ public class DummyIOExample implements Service {
 
 	@Override
 	public void init() throws InitException {
-		// Create the IOProxy
-		ioProxy = new IOProxy(transport);
-
 		// Listen for capabilities
-		ioProxy.caps().addConsumer(this::onCaps);
-		
-		// Request capabilities now
-		ioProxy.caps().requestCaps();
+		logger.info("IO Capabilities: " + IOProxy.probe(transport, 1000).get(ioServiceId));
+
+		// Create the IOProxy
+		ioProxy = new IOProxy(transport, ioServiceId);
 		
 		// Listen for inputs
 		ioProxy.inputs().addConsumer(this::onInput);
@@ -58,10 +54,6 @@ public class DummyIOExample implements Service {
 		// Start thread to change outputs
 		if(outputId != null)
 			new Thread(this::outputLoop).start();
-	}
-	
-	private void onCaps(List<Cap> caps) {
-		logger.info("IO Capabilities: " + caps);
 	}
 	
 	private void onInput(RID id, IOValue value) {

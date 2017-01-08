@@ -9,6 +9,8 @@ import io.septapulse.rook.api.config.Configurable;
  *
  */
 public class GoPiGoConfig {
+	@Configurable(min="1", increment="1", comment="Number of milliseconds between broadcasting Input/Output changes", defaultValue="100")
+	private long broadcastInterval = 100;
 	@Configurable(comment = "I2C Bus")
 	private Byte bus;
 	@Configurable(comment = "I2C Address")
@@ -36,6 +38,10 @@ public class GoPiGoConfig {
 	@Configurable(comment = "I2C Throttle Interval Millis", defaultValue = "20")
 	private long i2cThrottleIntervalMillis = 20;
 
+	public long getBroadcastInterval() {
+		return broadcastInterval;
+	}
+	
 	public Byte getBus() {
 		return bus;
 	}

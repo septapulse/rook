@@ -2,19 +2,14 @@ package io.septapulse.rook.core.io.proxy;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.transport.GrowableBuffer;
 import io.septapulse.rook.api.transport.Transport;
 import io.septapulse.rook.api.transport.consumer.BroadcastMessageConsumer;
-import io.septapulse.rook.core.io.proxy.message.Cap;
-import io.septapulse.rook.core.io.proxy.message.CapType;
-import io.septapulse.rook.core.io.proxy.message.CapsDeserializer;
 import io.septapulse.rook.core.io.proxy.message.IOValue;
 
 /**
@@ -31,46 +26,27 @@ public abstract class IOListener {
 	private final Set<IOValueBatchConsumer> batchConsumers = new LinkedHashSet<>();
 	private final Map<RID, Set<IOValueConsumer>> filteringConsumers = new HashMap<>();
 	private final Map<RID, IOValue> values = new HashMap<>();
-	private final Map<RID, RID> valueServiceIDs = new HashMap<>();
 	private final Transport transport;
+	private final RID ioServiceId;
 	private final RID group;
-	private final CapType type;
 	private AtomicBoolean joined = new AtomicBoolean(false);
 	
-	IOListener(Transport transport, RID group, CapType type) {
+	IOListener(Transport transport, RID ioServiceId, RID group) {
 		this.transport = transport;
+		this.ioServiceId = ioServiceId;
 		this.group = group;
-		this.type = type;
-		transport.bcast().addMessageConsumer(IOGroups.CAPS, null, capsListener, new CapsDeserializer());
-		transport.bcast().join(IOGroups.CAPS);
+		transport.bcast().join(group);
 	}
 	
 	public void stop() {
-		if(joined.get()) {
-			transport.bcast().removeMessageConsumer(valueListener);
-			transport.bcast().leave(group);
+		if(joined.compareAndSet(true, false)) {
+			tryLeave();
 		}
-		transport.bcast().removeMessageConsumer(capsListener);
-		transport.bcast().leave(IOGroups.CAPS);
 	}
 	
 	public void reset() {
 		values.clear();
-		valueServiceIDs.clear();
 	}
-	
-	private final BroadcastMessageConsumer<List<Cap>> capsListener = new BroadcastMessageConsumer<List<Cap>>() {
-		@Override
-		public void onBroadcastMessage(RID from, RID group, List<Cap> caps) {
-			synchronized (valueServiceIDs) {
-				for(Cap c : caps) {
-					if(c.getCapType() == type) {
-						valueServiceIDs.put(c.getId().immutable(), from.immutable());
-					}
-				}
-			}
-		}
-	};
 	
 	private final BroadcastMessageConsumer<GrowableBuffer> valueListener = new BroadcastMessageConsumer<GrowableBuffer>() {
 		private RID id = new RID();
@@ -83,7 +59,6 @@ public abstract class IOListener {
 				id.setValue(valuesBuf.direct().getLong(off));
 				off+=8;
 				off+=val.deserialize(valuesBuf, off);
-				
 				// update cache
 				updateCache(id, val);
 				
@@ -153,6 +128,9 @@ public abstract class IOListener {
 	public void removeConsumer(IOValueConsumer consumer) {
 		synchronized (consumers) {
 			consumers.remove(consumer);
+			if(consumers.size() == 0) {
+				tryLeave();
+			}
 		}
 	}
 	
@@ -163,29 +141,37 @@ public abstract class IOListener {
 		}
 	}
 
-	public void removeBatchConsumer(Consumer<List<IOValue>> consumer) {
+	public void removeBatchConsumer(IOValueBatchConsumer consumer) {
 		synchronized (consumers) {
 			batchConsumers.remove(consumer);
+			if(consumers.size() == 0) {
+				tryLeave();
+			}
 		}
 	}
 	
 	private void tryJoin() {
 		if(joined.compareAndSet(false, true)) {
-			transport.bcast().addMessageConsumer(group, null, valueListener);
-			transport.bcast().join(group);
+			transport.bcast().addMessageConsumer(group, ioServiceId, valueListener);
+		}
+	}
+	
+	private void tryLeave() {
+		if(joined.compareAndSet(true, false)) {
+			transport.bcast().removeMessageConsumer(valueListener);
 		}
 	}
 
+	/**
+	 * Get's the value from the internal value cache.  This cache is updated from IO broadcast messages.
+	 * 
+	 * @param id The ID to get the value of
+	 * @return The value, or null if it does not exist.
+	 */
 	public IOValue getValue(RID id) {
 		synchronized (values) {
 			IOValue v = values.get(id);
 			return v != null ? v.copy() : null;
-		}
-	}
-	
-	RID getServiceID(RID valueID) {
-		synchronized (valueServiceIDs) {
-			return valueServiceIDs.get(valueID);
 		}
 	}
 	

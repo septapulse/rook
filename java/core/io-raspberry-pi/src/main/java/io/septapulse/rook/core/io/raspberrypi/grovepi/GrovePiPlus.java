@@ -10,11 +10,10 @@ import com.pi4j.io.i2c.I2CFactory;
 
 import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.exception.InitException;
-import io.septapulse.rook.core.io.proxy.message.IOValue;
 import io.septapulse.rook.core.io.raspberrypi.RaspberryPiDevice;
 import io.septapulse.rook.core.io.raspberrypi.grovepi.GrovePiPlusConfig.DigitalPinMode;
 import io.septapulse.rook.core.io.raspberrypi.util.ThrottledI2CDevice;
-import io.septapulse.rook.core.io.service.IOManager;
+import io.septapulse.rook.core.io.service.IOService;
 
 /**
  * A {@link RaspberryPiDevice} for Dexter Industries GrovePi+
@@ -32,7 +31,7 @@ public class GrovePiPlus implements RaspberryPiDevice {
 	}
 	
 	@Override
-	public void init(IOManager ioManager) throws InitException {
+	public void init(IOService ioManager) throws InitException {
 		logger.info("Initializing GrovePiPlus Device");
 		try {
 			byte bus = config.getBus() != null ? config.getBus() : GrovePiPlusHardware.DEFAULT_BUS;
@@ -63,28 +62,29 @@ public class GrovePiPlus implements RaspberryPiDevice {
 		logger.info("GrovePiPlus Device initialized");
 	}
 	
-	private void addAnalogPin(IOManager ioManager, GrovePiPlusHardware hw, int pin, GrovePiPlusConfig.AnalogPin cfg) {
+	private void addAnalogPin(IOService ioManager, GrovePiPlusHardware hw, int pin, GrovePiPlusConfig.AnalogPin cfg) {
 		if(cfg != null && cfg.getPinName() != null && cfg.getPinName().length() > 0) {
 			String pinName = cfg.getPinName();
 			RID id = RID.create(pinName);
 			logger.info("Initializing A" + pin + " - ID=" + id);
-			ioManager.addInput(id, new GrovePiPlusAnalogInput((byte)pin, id, hw));
+			ioManager.addInput(new GrovePiPlusAnalogInput((byte)pin, id, hw));
 		}
 	}
 	
-	private void addDigitalPin(IOManager ioManager, GrovePiPlusHardware hw, int pin, GrovePiPlusConfig.DigitalPin cfg) {
+	private void addDigitalPin(IOService ioManager, GrovePiPlusHardware hw, int pin, GrovePiPlusConfig.DigitalPin cfg) {
 		if(cfg != null && cfg.getPinName() != null && cfg.getPinName().length() > 0 && cfg.getPinMode() != null) {
 			RID id = RID.create(cfg.getPinName());
 			GrovePiPlusConfig.DigitalPinMode pinMode = cfg.getPinMode();
-			IOValue shutdownValue = cfg.getShutdownValue() != null ?
-					new IOValue().setValue(cfg.getShutdownValue()) : null;
+			// TODO implement
+//			IOValue shutdownValue = cfg.getShutdownValue() != null ?
+//					new IOValue().setValue(cfg.getShutdownValue()) : null;
 			logger.info("Initializing D" + pin + " - ID=" + id + " PinMode=" + pinMode);
 			if(pinMode == DigitalPinMode.INPUT) {
-				ioManager.addInput(id, new GrovePiPlusDigitalInput((byte)pin, id, hw));
+				ioManager.addInput(new GrovePiPlusDigitalInput((byte)pin, id, hw));
 			} else if(pinMode == DigitalPinMode.OUTPUT) {
-				ioManager.addOutput(id, new GrovePiPlusDigitalOutput((byte)pin, id, hw), shutdownValue);
+				ioManager.addOutput(new GrovePiPlusDigitalOutput((byte)pin, id, hw));
 			} else if(pinMode == DigitalPinMode.PWM) {
-				ioManager.addOutput(id, new GrovePiPlusAnalogOutput((byte)pin, id, hw), shutdownValue);
+				ioManager.addOutput(new GrovePiPlusAnalogOutput((byte)pin, id, hw));
 			} else {
 				throw new IllegalArgumentException("Invalid pinMode '" + pinMode + "' for D" + 
 						pin + " cfg=" + cfg + " - Valid pinMode values: INPUT,OUTPUT,PWM");

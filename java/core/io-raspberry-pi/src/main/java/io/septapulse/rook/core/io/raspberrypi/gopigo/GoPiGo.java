@@ -10,11 +10,10 @@ import com.pi4j.io.i2c.I2CFactory;
 
 import io.septapulse.rook.api.RID;
 import io.septapulse.rook.api.exception.InitException;
-import io.septapulse.rook.core.io.proxy.message.IOValue;
 import io.septapulse.rook.core.io.raspberrypi.RaspberryPiDevice;
 import io.septapulse.rook.core.io.raspberrypi.util.ThrottledI2CDevice;
+import io.septapulse.rook.core.io.service.IOService;
 import io.septapulse.rook.core.io.service.IOInput;
-import io.septapulse.rook.core.io.service.IOManager;
 import io.septapulse.rook.core.io.service.IOOutput;
 
 /**
@@ -33,7 +32,7 @@ public class GoPiGo implements RaspberryPiDevice {
 	}
 	
 	@Override
-	public void init(IOManager ioManager) throws InitException {
+	public void init(IOService ioManager) throws InitException {
 		logger.info("Initializing GoPiGo Device");
 		try {
 			byte bus = config.getBus() != null ? config.getBus() : GoPiGoHardware.DEFAULT_BUS;
@@ -87,14 +86,14 @@ public class GoPiGo implements RaspberryPiDevice {
 		return s != null && !s.isEmpty();
 	}
 
-	private void add(IOManager ioManager, IOInput input) {
+	private void add(IOService ioManager, IOInput input) {
 		logger.info("Adding input: " + input.cap().getId());
-		ioManager.addInput(input.cap().getId(), input);
+		ioManager.addInput(input);
 	}
 	
-	private void add(IOManager ioManager, IOOutput output) {
+	private void add(IOService ioManager, IOOutput output) {
 		logger.info("Adding output: " + output.cap().getId());
-		ioManager.addOutput(output.cap().getId(), output, new IOValue(0));
+		ioManager.addOutput(output);
 	}
 
 	@Override
