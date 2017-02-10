@@ -19,7 +19,7 @@ public class ServiceConfigGenerator {
 		Class<?> configType = constructor.getParameterTypes()[0];
 		StringBuilder sb = new StringBuilder();
 		appendTab(sb, tab);
-		sb.append("\"command\": \"java -cp lib/* io.septapulse.api.ServiceLauncher -st " + serviceType.getName() + " -sc ${config} -tt run.rook.core.transport.websocket.WebsocketTransport -tc {}\",\n");
+		sb.append("\"command\": \"java -cp lib/* run.rook.api.ServiceLauncher -st " + serviceType.getName() + " -sc ${config} -tt run.rook.core.transport.websocket.WebsocketTransport -tc {}\",\n");
 		appendTab(sb, tab);
 		sb.append("\"arguments\": {\n");
 		sb.append(generate("config", configType, null, tab+1));
