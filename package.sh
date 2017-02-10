@@ -69,7 +69,7 @@ cp -f scripts/cli.sh ${LOCAL_TARGET}/
 # Build rook/java
 echo "Building Java Platform"
 cd ${DIR}/java/
-mvn clean install package assembly:directory -DskipTests
+mvn clean compile package assembly:directory -DskipTests
 echo "Replacing ${PLATFORM}"
 rm -rf ${PLATFORM}
 mkdir -p ${PLATFORM}
@@ -90,8 +90,22 @@ cd ${DIR}/html/ui/sensorlogger/ && zip -r ${PLATFORM}/ui/sensorlogger.zip *
 # Copy to remote
 if [[ -z $REMOTE_TARGET ]]; then
   # No remote. Done now
-  echo "Done."
+  echo "Deployed to local filesystem."
 else
   scp -r $LOCAL_TARGET $REMOTE_TARGET
-  echo "Copied. Done."
+  echo "Copied to remote filesystem."
 fi
+
+# Check restart
+if [ "$2" == "restart" ]; then
+  if [[ -z $REMOTE_TARGET ]]; then
+    # No remote. Run script locally
+    cd ${LOCAL_TARGET} && ./stop.sh && ./start.sh
+  else
+    # Run remotely
+    ssh ${REMOTE_TARGET%:*} 'bash -s' < 'cd ${REMOTE_TARGET#*:} && ./stop.sh && ./stop.sh'
+  fi
+  echo "Restarted Rook Daemon"
+fi 
+
+echo "Done."

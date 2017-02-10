@@ -62,7 +62,7 @@
 							</descriptors>
 							<archive>
 								<manifest>
-									<mainClass>rook.cli.CLI</mainClass>
+									<mainClass>io.septapulse.rook.cli.CLI</mainClass>
 								</manifest>
 							</archive>
 						</configuration>

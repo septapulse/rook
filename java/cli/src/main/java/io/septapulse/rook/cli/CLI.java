@@ -36,13 +36,30 @@ public class CLI implements Runnable {
 
 	private static final int CONNECT_TIMEOUT_SECONDS = 3;
 	
-	public static void main(String[] args) {
-		if(args.length != 1) {
-			System.out.println("Format: CLI <url>");
+	public static void main(String[] args) throws IOException {
+		if(args.length == 0) {
+			System.out.println("Loop Mode Format:  CLI <url>");
+			System.out.println("Single Cmd Format: CLI <url> <command>");
 			System.exit(1);
 		}
 		String ws = args[0];
-		new CLI(ws, new BufferedReader(new InputStreamReader(System.in)), System.out).run();
+		CLI cli = new CLI(ws, new BufferedReader(new InputStreamReader(System.in)), System.out);
+		if(args.length == 1) {
+			if("help".equalsIgnoreCase(args[0])) {
+				// display help
+				System.out.println(cli.help());
+			} else {
+				// loop mode
+				cli.run();
+			}
+		} else {
+			// single command
+			StringBuilder input = new StringBuilder();
+			for(int i = 1; i < args.length; i++) {
+				input.append(args[i]).append(" ");
+			}
+			cli.process(input.toString().trim());
+		}
 		System.exit(0);
 	}
 
@@ -63,31 +80,7 @@ public class CLI implements Runnable {
 			try {
 				clout.print("# ");
 				String input = clin.readLine();
-				if(input.trim().length() > 0) {
-					String[] cmd = parse(input);
-					switch(cmd[0]) {
-					case "exit":
-						return;
-					case "help":
-						clout.println(help());
-						break;
-					case "process":
-						clout.println(process(Arrays.copyOfRange(cmd, 1, cmd.length)));
-						break;
-					case "package":
-						clout.println(pkg(Arrays.copyOfRange(cmd, 1, cmd.length)));
-						break;
-					case "config":
-						clout.println("CONFIG commands are not supported quite yet");
-						break;
-					case "ui":
-						clout.println(ui(Arrays.copyOfRange(cmd, 1, cmd.length)));
-						break;
-					default:
-						clout.println(cmd[0] + " is not a recognized command type");
-						break;
-					}
-				}
+				process(input);
 			} catch(ArrayIndexOutOfBoundsException e) {
 				clout.println("ERROR: Could not parse. Wrong number of arguments provided.");
 			} catch(Throwable t) {
@@ -95,6 +88,34 @@ public class CLI implements Runnable {
 				PrintWriter pw = new PrintWriter(sw);
 				t.printStackTrace(pw);
 				clout.println(sw.toString());
+			}
+		}
+	}
+
+	public void process(String input) throws IOException {
+		if(input.trim().length() > 0) {
+			String[] cmd = parse(input);
+			switch(cmd[0]) {
+			case "exit":
+				return;
+			case "help":
+				clout.println(help());
+				break;
+			case "process":
+				clout.println(process(Arrays.copyOfRange(cmd, 1, cmd.length)));
+				break;
+			case "package":
+				clout.println(pkg(Arrays.copyOfRange(cmd, 1, cmd.length)));
+				break;
+			case "config":
+				clout.println("CONFIG commands are not supported quite yet");
+				break;
+			case "ui":
+				clout.println(ui(Arrays.copyOfRange(cmd, 1, cmd.length)));
+				break;
+			default:
+				clout.println(cmd[0] + " is not a recognized command type");
+				break;
 			}
 		}
 	}

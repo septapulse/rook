@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 
 import io.septapulse.rook.api.Router;
+import io.septapulse.rook.api.RouterLauncher;
 import io.septapulse.rook.api.config.Configurable;
 import io.septapulse.rook.api.exception.InitException;
 
@@ -33,7 +34,7 @@ import io.septapulse.rook.api.exception.InitException;
  */
 @WebSocket
 public class WebsocketRouter implements Router, WebSocketCreator {
-
+	
 	public static final String ROUTER_PROTOCOL = "router";
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -96,6 +97,7 @@ public class WebsocketRouter implements Router, WebSocketCreator {
 
 	@OnWebSocketMessage
     public void onText(Session session, String message) throws IOException {
+		System.out.println(message);
 		WebsocketMessage m = gson.fromJson(message, WebsocketMessage.class);
 		switch(m.getType()) {
 		case REGISTER:
@@ -218,6 +220,11 @@ public class WebsocketRouter implements Router, WebSocketCreator {
 		if (existingInfo != null) {
 			sessions.remove(existingInfo.getId());
 		}
+	}
+	
+	public static void main(String[] args) {
+		String config = args.length == 0 ? "{}" : args[0];
+		RouterLauncher.main("-t", WebsocketRouter.class.getName(), "-c", config);
 	}
 
 }
