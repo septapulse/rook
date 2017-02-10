@@ -103,7 +103,7 @@ if [ "$2" == "restart" ]; then
     cd ${LOCAL_TARGET} && ./stop.sh && ./start.sh
   else
     # Run remotely
-    ssh ${REMOTE_TARGET%:*} 'bash -s' < 'cd ${REMOTE_TARGET#*:} && ./stop.sh && ./stop.sh'
+    ssh ${REMOTE_TARGET%:*} "cd ${REMOTE_TARGET#*:} && ./stop.sh && ./start.sh"
   fi
   echo "Restarted Rook Daemon"
 fi 
