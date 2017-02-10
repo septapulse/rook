@@ -1,0 +1,12 @@
+package run.rook.examples.io.dummy;
+
+import run.rook.api.config.Configurable;
+
+public class DummyIOExampleServiceConfig {
+	@Configurable(comment="DummyIOService ID", defaultValue="IO")
+	public String ioServiceId = "IO";
+	@Configurable(comment="Frequence of output update (in millis)", defaultValue="1000")
+	public long outputInterval = 1000;
+	@Configurable(comment="ID of output to intermittently change between 0 and 1")
+	public String outputId;
+}
