@@ -97,7 +97,6 @@ public class WebsocketRouter implements Router, WebSocketCreator {
 
 	@OnWebSocketMessage
     public void onText(Session session, String message) throws IOException {
-		System.out.println(message);
 		WebsocketMessage m = gson.fromJson(message, WebsocketMessage.class);
 		switch(m.getType()) {
 		case REGISTER:

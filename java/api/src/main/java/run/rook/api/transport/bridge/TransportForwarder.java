@@ -45,7 +45,6 @@ class TransportForwarder {
 	
 	private void handleFromAnnouncement(RID serviceId) {
 		if(!toServices.contains(serviceId)) {
-			System.out.println("handleFromAnnouncement " + serviceId);
 			fromServices.add(serviceId.immutable());
 //			toTransport.announce().incognito_announce(serviceId);
 		}

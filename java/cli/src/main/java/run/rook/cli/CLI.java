@@ -1,17 +1,20 @@
 package run.rook.cli;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -184,6 +187,7 @@ public class CLI implements Runnable {
 	}
 	
 	private String processStart(String packageId, String serviceId, String[] params) throws IOException {
+		params = resolveParams(params);
 		ProcessResponse resp = send(new ProcessRequest()
 				.setType(ProcessMessageType.START)
 				.setPackage(packageId)
@@ -196,6 +200,18 @@ public class CLI implements Runnable {
 		}
 	}
 
+	private String[] resolveParams(String[] params) throws IOException {
+		String[] resolved = new String[params.length];
+		for(int i = 0; i < params.length; i++) {
+			if(params[i].startsWith("local://")) {
+				params[i] = readFileString(params[i].substring("local://".length()));
+			} else {
+				resolved[i] = params[i];
+			}
+		}
+		return resolved;
+	}
+	
 	private String processStop(String processId) throws IOException {
 		ProcessResponse resp = send(new ProcessRequest()
 				.setType(ProcessMessageType.STOP)
@@ -292,7 +308,7 @@ public class CLI implements Runnable {
 	}
 
 	private String pkgAdd(String pathToZip) throws IOException {
-		byte[] dataBytes = readFile(pathToZip);
+		byte[] dataBytes = readFileBytes(pathToZip);
 		String data = Base64.getEncoder().encodeToString(dataBytes);
 		PackageResponse resp = send(new PackageRequest()
 				.setType(PackageMessageType.ADD)
@@ -304,9 +320,18 @@ public class CLI implements Runnable {
 		}
 	}
 
-	private byte[] readFile(String pathToZip) throws IOException {
-		// FIXME
-		return new byte[0];
+	private byte[] readFileBytes(String path) throws IOException {
+		try (PathResource resource = new PathResource(new File(path))) {
+			return Files.readAllBytes(resource.getPath());
+		}
+	}
+	
+	private String readFileString(String path) throws IOException {
+		try (PathResource resource = new PathResource(new File(path))) {
+			StringBuilder sb = new StringBuilder();
+			Files.readAllLines(resource.getPath()).stream().forEach(line -> sb.append(line).append("\n"));
+			return sb.toString();
+		}
 	}
 
 	private String pkgRemove(String packageId) throws IOException {
@@ -384,7 +409,7 @@ public class CLI implements Runnable {
 	}
 
 	private String uiAdd(String pathToZip) throws IOException {
-		byte[] dataBytes = readFile(pathToZip);
+		byte[] dataBytes = readFileBytes(pathToZip);
 		String data = Base64.getEncoder().encodeToString(dataBytes);
 		UiResponse resp = send(new UiRequest()
 				.setType(UiMessageType.ADD)

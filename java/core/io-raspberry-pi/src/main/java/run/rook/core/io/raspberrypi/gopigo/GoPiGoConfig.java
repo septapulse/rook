@@ -15,26 +15,26 @@ public class GoPiGoConfig {
 	private Byte bus = 1;
 	@Configurable(comment = "I2C Address", defaultValue="8")
 	private Byte address = 8;
-	@Configurable(comment = "Left Encoder Input ID")
-	private String encoderLeft;
-	@Configurable(comment = "Right Encoder Input ID")
-	private String encoderRight;
-	@Configurable(comment = "Left LED Output ID")
-	private String ledLeft;
-	@Configurable(comment = "Right LED Output ID")
-	private String ledRight;
-	@Configurable(comment = "Left Motor Output ID")
-	private String motorLeft;
-	@Configurable(comment = "Right Motor Output ID")
-	private String motorRight;
-	@Configurable(comment = "Servo Position Output ID")
-	private String servoPosition;
-	@Configurable(comment = "Servo Enabled Output ID")
-	private String servoEnabled;
-	@Configurable(comment = "Ultrasonic Distance Input ID")
-	private String ultrasonicDistance;
-	@Configurable(comment = "Voltage Input ID")
-	private String voltage;
+	@Configurable(comment = "Left Encoder Input ID", defaultValue = "SPEED_LEFT")
+	private String encoderLeft = "SPEED_LEFT";
+	@Configurable(comment = "Right Encoder Input ID", defaultValue = "SPEED_RIGHT")
+	private String encoderRight = "SPEED_RIGHT";
+	@Configurable(comment = "Left LED Output ID", defaultValue = "LED_LEFT")
+	private String ledLeft = "LED_LEFT";
+	@Configurable(comment = "Right LED Output ID", defaultValue = "LED_RIGHT")
+	private String ledRight = "LED_RIGHT";
+	@Configurable(comment = "Left Motor Output ID", defaultValue = "MOTOR_LEFT")
+	private String motorLeft = "MOTOR_LEFT";
+	@Configurable(comment = "Right Motor Output ID", defaultValue = "MOTOR_RIGHT")
+	private String motorRight = "MOTOR_RIGHT";
+	@Configurable(comment = "Servo Position Output ID", defaultValue = "SERVO")
+	private String servoPosition = "SERVO";
+	@Configurable(comment = "Servo Enabled Output ID", defaultValue = "SERVO_POWER")
+	private String servoEnabled = "SERVO_POWER";
+	@Configurable(comment = "Ultrasonic Distance Input ID", defaultValue = "DISTANCE")
+	private String ultrasonicDistance = "DISTANCE";
+	@Configurable(comment = "Voltage Input ID", defaultValue = "")
+	private String voltage = "VOLTAGE";
 	@Configurable(comment = "I2C Throttle Interval Millis", defaultValue = "20")
 	private long i2cThrottleIntervalMillis = 20;
 
