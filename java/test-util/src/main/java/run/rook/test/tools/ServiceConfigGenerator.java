@@ -19,13 +19,21 @@ public class ServiceConfigGenerator {
 		Class<?> configType = constructor.getParameterTypes()[0];
 		StringBuilder sb = new StringBuilder();
 		appendTab(sb, tab);
-		sb.append("\"command\": \"java -cp lib/* run.rook.api.ServiceLauncher -st " + serviceType.getName() + " -sc ${config} -tt run.rook.core.transport.websocket.WebsocketTransport -tc {}\",\n");
+		sb.append("\"command\": \"java -cp lib/* run.rook.api.ServiceLauncher -st " + serviceType.getName() + " -id ${id} -sc ${config} -tt run.rook.core.transport.websocket.WebsocketTransport -tc {}\",\n");
 		appendTab(sb, tab);
-		sb.append("\"arguments\": {\n");
+		sb.append("\"arguments\": [\n");
+		appendTab(sb, tab+1);
+		sb.append("{\n");
+		appendTab(sb, tab+2);
+		sb.append("\"name\": \"id\",\n");
+		appendTab(sb, tab+2);
+		sb.append("\"type\": \"STRING\"\n");
+		appendTab(sb, tab+1);
+		sb.append("},\n");
 		sb.append(generate("config", configType, null, tab+1));
 		sb.append("\n");
 		appendTab(sb, tab);
-		sb.append("}");
+		sb.append("]");
 		return sb.toString();
 	}
 	
@@ -42,7 +50,7 @@ public class ServiceConfigGenerator {
 		} else if(type.equals(Boolean.class) || type.equals(boolean.class)) {
 			return generateBoolean(name, defaultValue, false, tab);
 		} else {
-			return generateObject(name, type, false, tab);
+			return generateObject(name, type, false, f != null, tab);
 		}
 	}
 
@@ -57,7 +65,7 @@ public class ServiceConfigGenerator {
 		} else if(type.equals(Boolean.class) || type.equals(boolean.class)) {
 			return generateBoolean(field.getName(), null, true, tab);
 		} else {
-			return generateObject(field.getName(), type, true, tab);
+			return generateObject(field.getName(), type, true, true, tab);
 		}
 	}
 
@@ -140,10 +148,14 @@ public class ServiceConfigGenerator {
 		return sb.toString();
 	}
 
-	private static String generateObject(String name, Class<?> type, boolean list, int tab) {
+	private static String generateObject(String name, Class<?> type, boolean list, boolean includeName, int tab) {
 		StringBuilder sb = new StringBuilder();
 		appendTab(sb, tab);
-		sb.append("\"" + name + "\": {\n");
+		if(includeName) {
+			sb.append("\"" + name + "\": {\n");
+		} else {
+			sb.append("{\n");
+		}
 		appendTab(sb, tab+1);
 		sb.append("\"name\": \"" + name + "\",\n");
 		appendTab(sb, tab+1);

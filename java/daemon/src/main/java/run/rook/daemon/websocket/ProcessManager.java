@@ -149,7 +149,7 @@ public class ProcessManager {
 					if(packageInfo != null && packageInfo.getServices() != null) {
 						ServiceInfo serviceInfo = packageInfo.getServices().get(service);
 						if(serviceInfo != null) {
-							return start(packageInfo.getName(), serviceInfo.getName(), serviceInfo.getCommand(), arguments);
+							return start(packageInfo.getName(), serviceInfo, arguments, packageDir);
 						}
 					}
 				} catch(Throwable t) {
@@ -160,13 +160,16 @@ public class ProcessManager {
 		throw new ProcessManagerException("No such service. package="+pkg+" service="+service+" arguments="+Arrays.toString(arguments));
 	}
 	
-	private ProcessInfo start(String packageName, String serviceName, String command, String[] arguments) throws ProcessManagerException {
-		String[] cmd = command.trim().split(" ");
-		String[] cmdAndArgs = new String[cmd.length+arguments.length];
-		System.arraycopy(cmd, 0, cmdAndArgs, 0, cmd.length);
-		System.arraycopy(arguments, 0, cmdAndArgs, cmd.length, arguments.length);
-		String id = Long.toString(nextProcessId.getAndIncrement(), BASE_36);
+	private ProcessInfo start(String packageName, ServiceInfo serviceInfo, String[] arguments, File workingDirectory) throws ProcessManagerException {
+		String[] cmd = serviceInfo.getCommand().trim().split(" ");
+		int argOffset = 0;
+		for(int i = 0; i < cmd.length; i++) {
+			if(cmd[i].startsWith("${") && cmd[i].endsWith("}")) {
+				cmd[i] = arguments[argOffset++];
+			}
+		}
 		
+		String id = Long.toString(nextProcessId.getAndIncrement(), BASE_36);
 		File dir = new File(runtimeDir, id);
 		dir.mkdirs();
 		File infoFile = new File(dir, INFO_FILENAME);
@@ -175,20 +178,22 @@ public class ProcessManager {
 		ProcessInfo info = new ProcessInfo()
 				.setId(id)
 				.setPackageName(packageName)
-				.setServiceName(serviceName);
+				.setServiceName(serviceInfo.getName());
 		
 		try {
 			FileUtil.writeFully(gson.toJson(info), infoFile);
 			
-			Process p = new ProcessBuilder(cmdAndArgs)
+			logger.info("Starting process id=" + id + ", dir=" + workingDirectory.getAbsolutePath() + ", cmd=" + Arrays.toString(cmd));
+			Process p = new ProcessBuilder(cmd)
 					.redirectOutput(logFile)
 					.redirectError(logFile)
+					.directory(workingDirectory)
 					.start();
 			processes.put(id, p);
 			
 			return info;
 		} catch(Throwable t) {
-			throw new ProcessManagerException("Could not start process. cmd=" + Arrays.toString(cmdAndArgs) + " info=" + info, t);
+			throw new ProcessManagerException("Could not start process. cmd=" + Arrays.toString(cmd) + " info=" + info, t);
 		}
 	}
 
@@ -202,6 +207,7 @@ public class ProcessManager {
 			throw new ProcessManagerException("Process " + id + " was already stopped");
 		}
 		try {
+			logger.info("Stopping process id=" + id);
 			if(forcibly) {
 				p.destroyForcibly();
 			} else {

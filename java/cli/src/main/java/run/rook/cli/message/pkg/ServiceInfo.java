@@ -1,6 +1,6 @@
 package run.rook.cli.message.pkg;
 
-import java.util.Map;
+import java.util.List;
 
 import com.google.gson.Gson;
 
@@ -8,7 +8,7 @@ public class ServiceInfo {
 	private String id;
 	private String name;
 	private String command;
-	private Map<String, ArgumentInfo> arguments;
+	private List<ArgumentInfo> arguments;
 
 	public String getId() {
 		return id;
@@ -37,11 +37,11 @@ public class ServiceInfo {
 		return this;
 	}
 
-	public Map<String, ArgumentInfo> getArguments() {
+	public List<ArgumentInfo> getArguments() {
 		return arguments;
 	}
 
-	public ServiceInfo setArguments(Map<String, ArgumentInfo> arguments) {
+	public ServiceInfo setArguments(List<ArgumentInfo> arguments) {
 		this.arguments = arguments;
 		return this;
 	}

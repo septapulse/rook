@@ -155,7 +155,7 @@ public class CLI implements Runnable {
 		case "list":
 			return processList();
 		case "start":
-			return processStart(params[1], params[2], Arrays.copyOfRange(params, 2, params.length));
+			return processStart(params[1], params[2], Arrays.copyOfRange(params, 3, params.length));
 		case "stop":
 			return processStop(params[1]);
 		case "stop_forcibly":

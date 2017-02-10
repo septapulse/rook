@@ -186,7 +186,11 @@ public class ZipManager<T> {
 					}
 					// rename zip and directory to match id
 					f.renameTo(new File(dir, id+ZIP_SUFFIX));
-					unzippedDir.renameTo(destDir);
+					boolean moved = unzippedDir.renameTo(destDir);
+					if(!moved) {
+						logger.error("Could not create " + destDir.getAbsolutePath());
+						FileUtil.delete(unzippedDir);
+					}
 					// write md5 file
 					File md5file = new File(dir, id+MD5_SUFFIX);
 					FileUtil.writeFully(md5new, md5file);
