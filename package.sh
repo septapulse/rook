@@ -69,7 +69,10 @@ cp -f scripts/cli.sh ${LOCAL_TARGET}/
 # Build rook/java
 echo "Building Java Platform"
 cd ${DIR}/java/
-mvn clean compile package assembly:directory -DskipTests
+# update local maven cache
+mvn clean install -DskipTests
+# build the deployment
+mvn package assembly:directory -DskipTests
 echo "Replacing ${PLATFORM}"
 rm -rf ${PLATFORM}
 mkdir -p ${PLATFORM}
