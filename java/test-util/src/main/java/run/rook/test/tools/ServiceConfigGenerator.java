@@ -29,16 +29,18 @@ public class ServiceConfigGenerator {
 		return sb.toString();
 	}
 	
-	private static String generate(String name, Class<?> type, Field f, int tab) {
+ 	private static String generate(String name, Class<?> type, Field f, int tab) {
+ 		Configurable configurable = f == null ? null : f.getAnnotation(Configurable.class);
+ 		String defaultValue = configurable == null ? null : configurable.defaultValue();
 		if(List.class.isAssignableFrom(type)) {
 			return generateList(f, tab);
 		} else if(isNumber(type)) {
-			return generateNumber(name, false, tab);
+			return generateNumber(name, defaultValue, false, tab);
 		} else if(type.equals(String.class) || type.isEnum()) {
 			// TODO don't treat enum as string
-			return generateString(name, false,tab);
+			return generateString(name, defaultValue, false,tab);
 		} else if(type.equals(Boolean.class) || type.equals(boolean.class)) {
-			return generateBoolean(name, false, tab);
+			return generateBoolean(name, defaultValue, false, tab);
 		} else {
 			return generateObject(name, type, false, tab);
 		}
@@ -48,12 +50,12 @@ public class ServiceConfigGenerator {
 		ParameterizedType pType = (ParameterizedType) field.getGenericType();
         Class<?> type = (Class<?>) pType.getActualTypeArguments()[0];
 		if(isNumber(type)) {
-			return generateNumber(field.getName(), true, tab);
+			return generateNumber(field.getName(), null, true, tab);
 		} else if(type.equals(String.class) || type.isEnum()) {
 			// TODO don't treat enum as string
-			return generateString(field.getName(), true, tab);
+			return generateString(field.getName(), null, true, tab);
 		} else if(type.equals(Boolean.class) || type.equals(boolean.class)) {
-			return generateBoolean(field.getName(), true, tab);
+			return generateBoolean(field.getName(), null, true, tab);
 		} else {
 			return generateObject(field.getName(), type, true, tab);
 		}
@@ -74,7 +76,7 @@ public class ServiceConfigGenerator {
 				|| Double.class.equals(type);
 	}
 	
-	private static String generateNumber(String name, boolean list, int tab) {
+	private static String generateNumber(String name, String defaultValue, boolean list, int tab) {
 		StringBuilder sb = new StringBuilder();
 		appendTab(sb, tab);
 		sb.append("\"" + name + "\": {\n");
@@ -86,13 +88,17 @@ public class ServiceConfigGenerator {
 		} else {
 			sb.append("\"type\": \"NUMBER\"\n");
 		}
+		if(defaultValue != null && defaultValue.length() > 0) {
+			appendTab(sb, tab+1);
+			sb.append("\"defaultValue\": \"" + defaultValue + "\"\n");
+		}
 		// FIXME min,max,increment
 		appendTab(sb, tab);
 		sb.append("}");
 		return sb.toString();
 	}
 	
-	private static String generateString(String name, boolean list, int tab) {
+	private static String generateString(String name, String defaultValue, boolean list, int tab) {
 		StringBuilder sb = new StringBuilder();
 		appendTab(sb, tab);
 		sb.append("\"" + name + "\": {\n");
@@ -104,12 +110,16 @@ public class ServiceConfigGenerator {
 		} else {
 			sb.append("\"type\": \"STRING\"\n");
 		}
+		if(defaultValue != null && defaultValue.length() > 0) {
+			appendTab(sb, tab+1);
+			sb.append("\"defaultValue\": \"" + defaultValue + "\"\n");
+		}
 		appendTab(sb, tab);
 		sb.append("}");
 		return sb.toString();
 	}
 	
-	private static String generateBoolean(String name, boolean list, int tab) {
+	private static String generateBoolean(String name, String defaultValue, boolean list, int tab) {
 		StringBuilder sb = new StringBuilder();
 		appendTab(sb, tab);
 		sb.append("\"" + name + "\": {\n");
@@ -120,6 +130,10 @@ public class ServiceConfigGenerator {
 			sb.append("\"type\": \"BOOLEAN_LIST\"\n");
 		} else {
 			sb.append("\"type\": \"BOOLEAN\"\n");
+		}
+		if(defaultValue != null && defaultValue.length() > 0) {
+			appendTab(sb, tab+1);
+			sb.append("\"defaultValue\": \"" + defaultValue + "\"\n");
 		}
 		appendTab(sb, tab);
 		sb.append("}");

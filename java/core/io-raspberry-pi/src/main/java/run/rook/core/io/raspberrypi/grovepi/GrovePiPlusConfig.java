@@ -11,10 +11,10 @@ import run.rook.api.config.Configurable;
 public class GrovePiPlusConfig {
 	@Configurable(min="1", increment="1", comment="Number of milliseconds between broadcasting Input/Output changes", defaultValue="100")
 	private long broadcastInterval = 100;
-	@Configurable(comment = "I2C Bus")
-	private Byte bus;
-	@Configurable(comment = "I2C Address")
-	private Byte address;
+	@Configurable(comment = "I2C Bus", defaultValue="1")
+	private Byte bus = 1;
+	@Configurable(comment = "I2C Address", defaultValue="4")
+	private Byte address = 4;
 	@Configurable(comment = "Pin A0")
 	private AnalogPin A0;
 	@Configurable(comment = "Pin A1")
