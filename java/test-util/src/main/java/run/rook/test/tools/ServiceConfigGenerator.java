@@ -82,15 +82,15 @@ public class ServiceConfigGenerator {
 		sb.append("\"" + name + "\": {\n");
 		appendTab(sb, tab+1);
 		sb.append("\"name\": \"" + name + "\",\n");
+		if(defaultValue != null && defaultValue.length() > 0) {
+			appendTab(sb, tab+1);
+			sb.append("\"defaultValue\": \"" + defaultValue + "\",\n");
+		}
 		appendTab(sb, tab+1);
 		if(list) {
 			sb.append("\"type\": \"NUMBER_LIST\"\n");
 		} else {
 			sb.append("\"type\": \"NUMBER\"\n");
-		}
-		if(defaultValue != null && defaultValue.length() > 0) {
-			appendTab(sb, tab+1);
-			sb.append("\"defaultValue\": \"" + defaultValue + "\"\n");
 		}
 		// FIXME min,max,increment
 		appendTab(sb, tab);
@@ -104,15 +104,15 @@ public class ServiceConfigGenerator {
 		sb.append("\"" + name + "\": {\n");
 		appendTab(sb, tab+1);
 		sb.append("\"name\": \"" + name + "\",\n");
+		if(defaultValue != null && defaultValue.length() > 0) {
+			appendTab(sb, tab+1);
+			sb.append("\"defaultValue\": \"" + defaultValue + "\",\n");
+		}
 		appendTab(sb, tab+1);
 		if(list) {
 			sb.append("\"type\": \"STRING_LIST\"\n");
 		} else {
 			sb.append("\"type\": \"STRING\"\n");
-		}
-		if(defaultValue != null && defaultValue.length() > 0) {
-			appendTab(sb, tab+1);
-			sb.append("\"defaultValue\": \"" + defaultValue + "\"\n");
 		}
 		appendTab(sb, tab);
 		sb.append("}");
@@ -125,15 +125,15 @@ public class ServiceConfigGenerator {
 		sb.append("\"" + name + "\": {\n");
 		appendTab(sb, tab+1);
 		sb.append("\"name\": \"" + name + "\",\n");
+		if(defaultValue != null && defaultValue.length() > 0) {
+			appendTab(sb, tab+1);
+			sb.append("\"defaultValue\": \"" + defaultValue + "\",\n");
+		}
 		appendTab(sb, tab+1);
 		if(list) {
 			sb.append("\"type\": \"BOOLEAN_LIST\"\n");
 		} else {
 			sb.append("\"type\": \"BOOLEAN\"\n");
-		}
-		if(defaultValue != null && defaultValue.length() > 0) {
-			appendTab(sb, tab+1);
-			sb.append("\"defaultValue\": \"" + defaultValue + "\"\n");
 		}
 		appendTab(sb, tab);
 		sb.append("}");
