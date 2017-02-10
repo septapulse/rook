@@ -23,7 +23,7 @@ import run.rook.core.io.proxy.message.IOValue;
 public abstract class IOListener {
 
 	private final Set<IOValueConsumer> consumers = new LinkedHashSet<>();
-	private final Set<IOValueBatchConsumer> batchConsumers = new LinkedHashSet<>();
+	private final Set<IOUpdateListener> updateListeners = new LinkedHashSet<>();
 	private final Map<RID, Set<IOValueConsumer>> filteringConsumers = new HashMap<>();
 	private final Map<RID, IOValue> values = new HashMap<>();
 	private final Transport transport;
@@ -77,10 +77,10 @@ public abstract class IOListener {
 						}
 					}
 				}
-				synchronized (batchConsumers) {
-					for(IOValueBatchConsumer c : batchConsumers) {
-						c.onValue(id, val, off == valuesBuf.length());
-					}
+			}
+			synchronized (updateListeners) {
+				for(IOUpdateListener c : updateListeners) {
+					c.onUpdate();
 				}
 			}
 		}
@@ -118,6 +118,12 @@ public abstract class IOListener {
 		}
 	}
 	
+	/**
+	 * 
+	 * Consumer to receive new values as soon as they arrive
+	 * 
+	 * @param consumer
+	 */
 	public void addConsumer(IOValueConsumer consumer) {
 		tryJoin();
 		synchronized (consumers) {
@@ -134,19 +140,21 @@ public abstract class IOListener {
 		}
 	}
 	
-	public void addBatchConsumer(IOValueBatchConsumer consumer) {
-		tryJoin();
-		synchronized (consumers) {
-			batchConsumers.add(consumer);
+	/**
+	 * 
+	 * Listeners are called immediately after new input updates arrive
+	 * 
+	 * @param consumer
+	 */
+	public void addUpdateListener(IOUpdateListener listener) {
+		synchronized (updateListeners) {
+			updateListeners.add(listener);
 		}
 	}
 
-	public void removeBatchConsumer(IOValueBatchConsumer consumer) {
-		synchronized (consumers) {
-			batchConsumers.remove(consumer);
-			if(consumers.size() == 0) {
-				tryLeave();
-			}
+	public void removeUpdateListener(IOUpdateListener listener) {
+		synchronized (updateListeners) {
+			updateListeners.remove(listener);
 		}
 	}
 	

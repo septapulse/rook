@@ -37,8 +37,13 @@ public final class RID {
 		this(0);
 	}
 
-	protected RID(long value) {
+	public RID(long value) {
 		this(value, false);
+	}
+	
+	public RID(String str) {
+		this();
+		parse(str);
 	}
 	
 	private RID(long value, boolean immutable) {

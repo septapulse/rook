@@ -14,7 +14,7 @@ import run.rook.core.io.proxy.IOProxy;
 /**
  * If you get too close to the GoPiGo's ultrasonic distance sensor, you'll scare it backwards.
  */
-public class GoPiGoExample implements Service {
+public class GoPiGoSimpleExample implements Service {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
@@ -30,9 +30,11 @@ public class GoPiGoExample implements Service {
 	private volatile boolean run = true;
 	
 	@Configurable
-	public GoPiGoExample(GoPiGoExampleServiceConfig config) {
+	public GoPiGoSimpleExample(GoPiGoExampleConfig config) {
+		// parse configuration values
+		// note: the configuration defines defaults for everything
 		this.escapeDistance = config.escapeDistance;
-		this.goPiGoServiceId = RID.create(config.goPiGoServiceId);
+		this.goPiGoServiceId = new RID(config.goPiGoServiceId);
 	}
 	
 	@Override
@@ -53,19 +55,28 @@ public class GoPiGoExample implements Service {
 	private void controlLoop() {
 		// loop logic
 		while(run) {
-			// don't kill the processor. check 10 times per second.
-			Sleep.trySleep(100);
+			// Don't kill the processor
+			Sleep.trySleep(20);
 			
+			// Check if the distance sensor reports a value that meets our threshold
 			if(robot.getDistance() <= escapeDistance) {
 				logger.info("Ah! Too close! Backing up...");
+				
+				// start backing away
 				robot.setLedLeft(true);
 				robot.setLedRight(true);
 				robot.setMotors(-150, -150);
+				
+				// wait one second
 				Sleep.trySleep(1000);
+				
+				// stop backing away
 				robot.setMotors(0, 0);
 				robot.setLedLeft(false);
 				robot.setLedRight(false);
 				Sleep.trySleep(1000);
+				
+				// log "Phew!" if we're no longer within our escape distance threshold
 				if(robot.getDistance() > escapeDistance) {
 					logger.info("Phew!");
 				}
