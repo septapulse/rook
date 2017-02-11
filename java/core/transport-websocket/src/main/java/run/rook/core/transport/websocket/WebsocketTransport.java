@@ -50,6 +50,7 @@ public class WebsocketTransport implements ControllableTransport {
 	private final AtomicBoolean running = new AtomicBoolean(false);
 	private final Gson gson = new Gson();
 	private final String url;
+	private final AtomicBoolean registered = new AtomicBoolean(false);
 	private Session session;
 	private SimpleAnnounceTransport announceTransport;
 	private SimpleBroadcastTransport bcastTransport;
@@ -95,7 +96,11 @@ public class WebsocketTransport implements ControllableTransport {
 	            if(session == null) {
 	            	throw new IOException("Could not connect to " + url);
 	            }
-				logger.info("Connected");
+				logger.info("Connected. Waiting for registration...");
+				while(!registered.get()) {
+					Thread.sleep(100);
+				}
+				logger.info("Registered");
 				
 				WebsocketPublisher publisher = new WebsocketPublisher(socket);
 				announceTransport = new SimpleAnnounceTransport(serviceId, publisher, respondToProbes);
@@ -233,6 +238,8 @@ public class WebsocketTransport implements ControllableTransport {
 			case UNICAST:
 				ucastTransport.handleUcastMessage(RID.create(m.getFrom()), RID.create(m.getTo()), GrowableBuffer.fromBase64(m.getData()));
 				break;
+			case REGISTER:
+				registered.set(true);
 			default:
 				logger.debug("Unrecognized type: " + m.getType());
 				break;

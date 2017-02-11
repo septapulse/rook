@@ -132,6 +132,9 @@ public class WebsocketRouter implements Router, WebSocketCreator {
 		// add session
 		sessions.put(m.getFrom(), session);
 		sessionInfos.put(session, new SessionInfo().setId(m.getFrom()));
+		logger.info("New Session [id=" + m.getFrom() + ", host=" + session.getRemote().getInetSocketAddress().getHostName() + "]");
+		// respond with "REGISTER" so the client can know for certain everything is good to go
+		send(session, gson.toJson(new WebsocketMessage(WebsocketMessageType.REGISTER, null, null, null, null)));
 	}
 	
 	private void handleAnnounce(Session session, WebsocketMessage m) {
@@ -152,6 +155,7 @@ public class WebsocketRouter implements Router, WebSocketCreator {
 		if(info != null) {
 			info.addGroup(m.getGroup());
 			sendAll(m);
+			logger.info(info.getId() + " joined group " + m.getGroup());
 		}
 	}
 	
@@ -160,6 +164,7 @@ public class WebsocketRouter implements Router, WebSocketCreator {
 		if(info != null) {
 			info.removeGroup(m.getGroup());
 			sendAll(m);
+			logger.info(info.getId() + " left group " + m.getGroup());
 		}
 	}
 	
