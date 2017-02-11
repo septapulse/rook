@@ -47,9 +47,10 @@ public class GoPiGoSimpleExample implements Service {
 	public void init() throws InitException {
 		// Create MyGoPiGo robot instance
 		robot = new MyGoPiGo(ioProxy);
-		
 		// Start control thread
 		new Thread(this::controlLoop).start();
+		// Start log thread
+		new Thread(this::logLoop).start();
 	}
 	
 	private void controlLoop() {
@@ -59,7 +60,9 @@ public class GoPiGoSimpleExample implements Service {
 			Sleep.trySleep(20);
 			
 			// Check if the distance sensor reports a value that meets our threshold
-			if(robot.getDistance() <= escapeDistance) {
+			long distance = robot.getDistance();
+			if(distance <= escapeDistance) {
+				logger.info("Distance: " + distance);
 				logger.info("Ah! Too close! Backing up...");
 				
 				// start backing away
@@ -77,10 +80,20 @@ public class GoPiGoSimpleExample implements Service {
 				Sleep.trySleep(1000);
 				
 				// log "Phew!" if we're no longer within our escape distance threshold
-				if(robot.getDistance() > escapeDistance) {
+				distance = robot.getDistance();
+				if(distance > escapeDistance) {
+					logger.info("Distance: " + distance);
 					logger.info("Phew!");
 				}
 			}
+		}
+	}
+	
+	private void logLoop() {
+		// loop logic
+		while(run) {
+			Sleep.trySleep(3000);
+			logger.info("Distance: " + robot.getDistance());
 		}
 	}
 	

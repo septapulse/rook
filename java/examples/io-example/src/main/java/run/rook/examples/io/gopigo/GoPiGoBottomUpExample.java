@@ -93,6 +93,9 @@ public class GoPiGoBottomUpExample implements Service {
 	public void init() throws InitException {
 		// Create MyGoPiGo robot instance
 		robot = new MyGoPiGo(ioProxy);
+		// Look forward
+		robot.setServoPower(true);
+		robot.setServoPosition(128);
 		// Start control thread
 		new Thread(this::controlLoop).start();
 	}

@@ -93,11 +93,8 @@ if [[ -z $REMOTE_TARGET ]]; then
   # No remote. Done now
   echo "Deployed to local filesystem."
 else
-  if [ "$2" == "restart" ]; then
-    ssh ${REMOTE_TARGET%:*} "cd ${REMOTE_TARGET#*:} && ./stop.sh"
-    echo "Stopped remote instance"
-  fi
-  scp -r $LOCAL_TARGET $REMOTE_TARGET
+  ssh ${REMOTE_TARGET%:*} "rm -rf ${REMOTE_TARGET#*:}/platform/"
+  rsync -a $LOCAL_TARGET $REMOTE_TARGET
   echo "Copied to remote filesystem."
 fi
 
@@ -108,7 +105,7 @@ if [ "$2" == "restart" ]; then
     cd ${LOCAL_TARGET} && ./stop.sh && ./start.sh
   else
     # Run remotely
-    ssh ${REMOTE_TARGET%:*} "cd ${REMOTE_TARGET#*:} && ./stop.sh && ./start.sh"
+    ssh ${REMOTE_TARGET%:*} "cd ${REMOTE_TARGET#*:} && ./stop.sh && sleep 1 && ./start.sh"
   fi
   echo "Restarted Rook Daemon"
 fi 

@@ -21,6 +21,11 @@
 			<artifactId>io-proxy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>rook.core</groupId>
+			<artifactId>transport-websocket</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

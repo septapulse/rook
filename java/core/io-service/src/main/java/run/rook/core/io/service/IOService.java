@@ -198,10 +198,11 @@ public abstract class IOService implements Service {
 		for(IOInput input : inputs.values()) {
 			try {
 				int off = buffer.length();
+				IOValue value = input.read();
 				buffer.reserve(off+8, true);
 				buffer.direct().putLong(off, input.id().toValue());
 				buffer.length(off+8);
-				input.read().serialize(buffer);
+				value.serialize(buffer);
 			} catch (IOException e) {
 				logger.error("Could not read from " + input.id().toString(), e);
 			}

@@ -12,7 +12,7 @@ public class MyGoPiGo {
 	// inputs
 	private final RID idSpeedLeft = RID.create("SPEED_LEFT").immutable();
     private final RID idSpeedRight = RID.create("SPEED_RIGHT").immutable();
-    private final RID idUltrasonicDistance = RID.create("ULTRASONIC").immutable();
+    private final RID idUltrasonicDistance = RID.create("DISTANCE").immutable();
     private final RID idVoltage = RID.create("VOLTAGE").immutable();
     // outputs
     private final RID idLedLeft = RID.create("LED_LEFT").immutable();
