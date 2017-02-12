@@ -97,6 +97,12 @@ public abstract class IOListener {
 		}
 	}
 
+	/**
+	 * Consumer to receive new values from the specified ID as soon as they arrive
+	 * 
+	 * @param id
+	 * @param consumer
+	 */
 	public void addFilteringConsumer(RID id, IOValueConsumer consumer) {
 		tryJoin();
 		synchronized (filteringConsumers) {
