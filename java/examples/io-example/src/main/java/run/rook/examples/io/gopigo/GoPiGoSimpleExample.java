@@ -54,7 +54,9 @@ public class GoPiGoSimpleExample implements Service {
 	
 	void handleDistance(RID id, IOValue value) {
 		logger.info("Distance is " + value);
+		// Check if the led should be on
 		boolean newLedStatus = value.getValueAsInt() < 30;
+		// Only send the led update if the status is actually changing
 		if(newLedStatus != curLedStatus) {
 			ioProxy.outputs().setOutput(ledIdLeft, new IOValue(newLedStatus));
 			ioProxy.outputs().setOutput(ledIdRight, new IOValue(newLedStatus));
@@ -64,6 +66,7 @@ public class GoPiGoSimpleExample implements Service {
 	
 	@Override
 	public void shutdown() {
+		// Stop the IO Proxy
 		ioProxy.stop();
 	}
 
