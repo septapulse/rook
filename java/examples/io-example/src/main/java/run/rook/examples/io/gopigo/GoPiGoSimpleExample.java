@@ -16,7 +16,7 @@ import run.rook.core.io.proxy.message.IOValue;
  */
 public class GoPiGoSimpleExample implements Service {
 
-	private static final String MY_ROBOT_IP = "192.168.99.3";
+	private static final String MY_ROBOT_IP = "192.168.0.99";
 	
 	public static void main(String[] args) {
 		ServiceLauncher.main(
