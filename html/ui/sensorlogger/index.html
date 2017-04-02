@@ -1,11 +1,38 @@
 <!doctype html public "-//IETF//DTD HTML 2.0//EN">
 <html>
-	<head>
-		<title>Rook Sensors</title>
-		<link rel="stylesheet" type="text/css" href="/rook.css">
-	</head>
-	<body>
-	  <h1>Sensors</h1>
-	  <h2>TODO</h2>
-	</body>
+  <head>
+    <title>Rook Sensors</title>
+    <link rel="stylesheet" type="text/css" href="/rook.css">
+  </head>
+  <body>
+    <script src="/js/jquery-3.1.0.js"></script>
+	<script src="/js/rook-daemon.js"></script>
+    <script src="/js/rook-helper.js"></script>
+    <script src="biginteger.js"></script>
+    <script src="sensorlogger.js"></script>
+      
+    <h1>Sensors</h1>
+
+	<h2>Inputs</h2>
+    <div>
+      <table id="inputs" style="margin-left: auto; margin-right: auto;"></table>
+    </div>
+    <h2>Outputs</h2>
+    <div>
+      <table id="outputs" style="margin-left: auto; margin-right: auto;"></table>
+    </div>
+              
+    <table class="template">
+      <tr id="template_row">
+        <td class='key'>
+          <label name='key'>KEY</label>
+        </td>
+        <td class='value'>
+          <label name='value'>null</label>
+        </td>
+      </tr>
+    </table>
+    
+    <script>init()</script>
+  </body>
 </html>

@@ -74,7 +74,7 @@ public class Daemon {
 	    
 		ResourceHandler platformHandler = new ResourceHandler();
 		platformHandler.setDirectoriesListed(false);
-		daemonHandler.setWelcomeFiles(new String[]{ "index.html" });
+		platformHandler.setWelcomeFiles(new String[]{ "index.html" });
 		platformHandler.setResourceBase(platformUiDir.getAbsolutePath());
 	    ContextHandler platformContext = new ContextHandler();
 	    platformContext.setContextPath("/ui/");
@@ -82,7 +82,7 @@ public class Daemon {
 	    
 	    ResourceHandler usrHandler = new ResourceHandler();
 	    usrHandler.setDirectoriesListed(false);
-	    daemonHandler.setWelcomeFiles(new String[]{ "index.html" });
+	    usrHandler.setWelcomeFiles(new String[]{ "index.html" });
 	    usrHandler.setResourceBase(usrUiDir.getAbsolutePath());
 	    ContextHandler usrContext = new ContextHandler();
 	    usrContext.setContextPath("/ui/");
